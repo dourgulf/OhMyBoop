@@ -3,8 +3,18 @@ import SwiftUI
 
 @main
 enum EntryPoint {
-    static func main() {
+    @MainActor static func main() async {
         let arguments = CommandLine.arguments
+        if arguments.count == 3, arguments[1] == "--validate-highlighter" {
+            let sample = "{\"message\":\"你好 🌍\",\"value\":42,\"enabled\":true}"
+            let light = await HighlightEngine.shared.render(sample, language: "json", dark: false)
+            let dark = await HighlightEngine.shared.render(sample, language: "json", dark: true)
+            do {
+                let report: [String: Any] = ["lightRanges": light.spans.count, "darkRanges": dark.spans.count, "lightStatus": light.status, "darkStatus": dark.status]
+                try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]).write(to: URL(fileURLWithPath: arguments[2]))
+                exit(light.spans.isEmpty || dark.spans.isEmpty ? 1 : 0)
+            } catch { exit(1) }
+        }
         if arguments.count == 4, arguments[1] == "--script-worker" {
             do {
                 let request = try JSONDecoder().decode(ScriptRequest.self, from: Data(contentsOf: URL(fileURLWithPath: arguments[2])))

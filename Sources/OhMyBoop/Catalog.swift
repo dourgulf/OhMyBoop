@@ -48,7 +48,11 @@ enum Catalog {
            let bundle = Bundle(url: url), let scripts = bundle.url(forResource: "scripts", withExtension: nil) {
             return scripts
         }
+        #if SWIFT_PACKAGE
         return Bundle.module.url(forResource: "scripts", withExtension: nil)!
+        #else
+        return Bundle.main.url(forResource: "scripts", withExtension: nil)!
+        #endif
     }()
     static let categories = ["格式化与压缩", "数据转换", "编码与解码", "哈希与加密", "文本工具", "数字与颜色", "日期与时间"]
 

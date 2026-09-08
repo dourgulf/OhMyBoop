@@ -1,5 +1,7 @@
 # OhMyBoop
 
+当前分支为 **HighlighterSwift 验证版**。接入固定版本 3.1.0，验证结论、性能数据与未完成事项见 [验证报告](docs/highlighterswift-validation.md)。
+
 原生 macOS 开发工具箱，SwiftUI + AppKit，支持 macOS 14 及以上。
 
 左边是分类、搜索和收藏列表，右边是当前功能的文本编辑区。接入本机 Boop 1.4.0 随附的全部 72 个功能，包括 JSON / YAML / CSV、格式化和压缩、Base64 / URL / HTML 编解码、哈希、文本处理、日期及数字转换。
@@ -8,10 +10,10 @@
 
 ```sh
 zsh scripts/build-app.sh
-open dist/OhMyBoop.app
+open dist/HighlighterValidation/OhMyBoop.app
 ```
 
-也可以用 Xcode 打开 `Package.swift`，选择 OhMyBoop 运行，或执行 `swift run`。
+用 Xcode 打开 `OhMyBoop.xcodeproj` 可运行标准 macOS 应用。Swift Package 仍支持 `swift run` 和 `swift test`；应用分发使用 Xcode 构建，以正确包含依赖的资源包。项目文件由 `project.yml` 生成，仅在修改该配置时需要运行 `xcodegen generate`。
 
 - 左侧选择功能，在右侧输入文本，点击「执行」或按 `⌘ Return`。
 - 结果直接替换当前文本；选中文本时通常只转换选区。四个沿用 Boop 全文接口的工具会在界面明确标示「此功能处理全文」。
@@ -19,6 +21,8 @@ open dist/OhMyBoop.app
 - 复制、粘贴替换、清空按钮只作用于当前功能，替换与清空可撤销。
 - 各功能分别保存文本、光标 / 选区、垂直滚动位置；切换功能保留全部编辑状态。重启恢复草稿、选区、滚动位置、收藏及上次选中的功能，撤销历史仅保留到退出应用。
 - 搜索支持英文名称、描述、标签和中文分类名称。
+- 高亮选择支持自动、纯文本和 10 种常用语言，每个功能独立记忆。采用 GitHub 深浅主题，并跟随系统外观。自动模式可先利用格式化工具的语言提示，转换工具则重新交给上游检测；UI 的“自动高亮”不代表已获得可信的语言判断。
+- 输入停止 180 ms 后后台着色，只更新临时显示属性。明确语言超过 100,000 个 UTF-16 单元、无语言提示的自动识别超过 8,000 个单元时使用纯文本回退。
 
 ## 草稿与执行
 
@@ -33,12 +37,12 @@ open dist/OhMyBoop.app
 ```sh
 swift test
 zsh scripts/build-app.sh
-codesign --verify --deep --strict dist/OhMyBoop.app
+codesign --verify --deep --strict dist/HighlighterValidation/OhMyBoop.app
 ```
 
 测试覆盖全部 72 个脚本的代表性输入、7 个依赖库、中文与 Emoji、UTF-16 选区、错误时原文保留、真实脚本子进程及死循环超时、独立撤销、草稿存取和损坏文件保护。界面测试额外输出 `/tmp/ohmyboop-preview.png`，属于 AppKit 离屏渲染，不代替真实窗口交互验收。
 
-`dist/OhMyBoop.app` 为本机构建、临时签名的应用，不需要安装 Boop；对外分发前需配置开发者签名与公证。构建架构跟随当前 Mac。
+`dist/HighlighterValidation/OhMyBoop.app` 为本机构建、临时签名的应用，不需要安装 Boop；对外分发前需配置开发者签名与公证。构建架构跟随当前 Mac。
 
 ## 代码结构
 
@@ -54,3 +58,5 @@ codesign --verify --deep --strict dist/OhMyBoop.app
 特别感谢 [Ivan Mathy](https://github.com/IvanMathy) 创建并开源 [Boop](https://github.com/IvanMathy/Boop)，以及所有 Boop 贡献者。OhMyBoop 的功能灵感及内置的 72 个工具脚本来自 Boop；本项目在此基础上提供左右分列界面和各功能独立的编辑状态。
 
 脚本来自 [Boop](https://github.com/IvanMathy/Boop)，其 [MIT 许可](https://github.com/IvanMathy/Boop/blob/main/LICENSE)及原始作者信息保留在 `Resources/ThirdPartyNotices.txt` 和脚本文件中。依赖库沿用其各自的许可声明。
+
+高亮使用 [HighlighterSwift](https://github.com/smittytone/HighlighterSwift) 及其随附的 highlight.js；许可已包含在应用的 ThirdPartyNotices.txt。

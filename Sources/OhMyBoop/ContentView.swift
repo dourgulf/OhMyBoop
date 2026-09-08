@@ -93,7 +93,7 @@ struct ContentView: View {
 
 private struct ToolDetail: View {
     let tool: Tool
-    let session: EditorSession
+    @Bindable var session: EditorSession
     let workspace: Workspace
 
     var body: some View {
@@ -129,6 +129,16 @@ private struct ToolDetail: View {
                 Button { session.replaceText("") } label: { Image(systemName: "trash") }
                     .help("清空当前功能（可撤销）").disabled(session.isRunning || session.text.isEmpty)
             }.buttonStyle(.borderless).padding(.horizontal, 24).padding(.vertical, 12)
+            Divider()
+            HStack {
+                Picker("高亮", selection: $session.highlightLanguage) {
+                    ForEach(HighlightLanguage.allCases) { language in
+                        Text(language.title).tag(language)
+                    }
+                }.frame(width: 175)
+                Text(session.highlightStatus).font(.caption).foregroundStyle(.secondary)
+                Spacer()
+            }.padding(.horizontal, 24).padding(.vertical, 8)
             Divider()
             ZStack(alignment: .topLeading) {
                 PersistentEditor(session: session)
