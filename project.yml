@@ -1,0 +1,47 @@
+name: OhMyBoop
+options:
+  bundleIdPrefix: dev.lidawen
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  SwiftTreeSitter:
+    url: https://github.com/tree-sitter/swift-tree-sitter.git
+    exactVersion: 0.25.0
+  BoopGrammars:
+    path: Vendor/BoopGrammars
+targets:
+  OhMyBoop:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/OhMyBoop
+        excludes: [Resources]
+      - path: Sources/OhMyBoop/Resources/scripts
+        type: folder
+        buildPhase: resources
+      - path: Sources/OhMyBoop/Resources/queries
+        type: folder
+        buildPhase: resources
+      - path: Sources/OhMyBoop/Resources/ThirdPartyNotices.txt
+        buildPhase: resources
+    dependencies:
+      - package: SwiftTreeSitter
+        product: SwiftTreeSitter
+      - package: BoopGrammars
+        product: BoopGrammars
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.lidawen.OhMyBoop
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: OhMyBoop
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 lidawen"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+schemes:
+  OhMyBoop:
+    build:
+      targets:
+        OhMyBoop: all

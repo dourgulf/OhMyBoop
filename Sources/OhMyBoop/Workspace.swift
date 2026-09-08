@@ -7,6 +7,7 @@ struct Draft: Codable, Equatable {
     var selectionLocation = 0
     var selectionLength = 0
     var scrollY: Double = 0
+    var highlightLanguage: String? = nil
 }
 
 struct WorkspaceSnapshot: Codable {
@@ -53,6 +54,14 @@ final class EditorSession: NSObject, NSTextViewDelegate {
     var message: String?
     var isError = false
     var isRunning = false
+    var highlightStatus = "等待输入"
+    var highlightLanguage: HighlightLanguage {
+        didSet {
+            initialDraft.highlightLanguage = highlightLanguage.rawValue
+            (backingScroll?.documentView as? HighlightTextView)?.language = highlightLanguage
+            onChange?()
+        }
+    }
     var characterCount: Int { text.count }
     var lineCount: Int { text.components(separatedBy: "\n").count }
     @ObservationIgnored var onChange: (() -> Void)?
@@ -65,6 +74,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         self.id = id
         text = draft.text
         initialDraft = draft
+        highlightLanguage = HighlightLanguage(rawValue: draft.highlightLanguage ?? "automatic") ?? .automatic
         super.init()
     }
 
@@ -75,7 +85,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         scroll.autohidesScrollers = true
         scroll.drawsBackground = true
         scroll.backgroundColor = .textBackgroundColor
-        let editor = NSTextView(frame: NSRect(x: 0, y: 0, width: 600, height: 600))
+        let editor = HighlightTextView(frame: NSRect(x: 0, y: 0, width: 600, height: 600))
         editor.isRichText = false
         editor.isAutomaticQuoteSubstitutionEnabled = false
         editor.isAutomaticDashSubstitutionEnabled = false
@@ -102,9 +112,15 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         editor.setSelectedRange(NSRange(location: start, length: min(max(0, initialDraft.selectionLength), count - start)))
         scroll.documentView = editor
         backingScroll = scroll
+        editor.onHighlight = { [weak self] status in self?.highlightStatus = status }
+        editor.automaticHint = HighlightLanguage.hint(for: id)
+        editor.language = highlightLanguage
         scroll.contentView.postsBoundsChangedNotifications = true
         scrollObserver = NotificationCenter.default.addObserver(forName: NSView.boundsDidChangeNotification, object: scroll.contentView, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.onChange?() }
+            MainActor.assumeIsolated {
+                (self?.backingScroll?.documentView as? HighlightTextView)?.scheduleViewportHighlight()
+                self?.onChange?()
+            }
         }
         return scroll
     }
@@ -124,7 +140,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
     func snapshot() -> Draft {
         guard let scroll = backingScroll, let editor = scroll.documentView as? NSTextView else { return initialDraft }
         let range = editor.selectedRange()
-        return Draft(text: editor.string, selectionLocation: range.location, selectionLength: range.length, scrollY: scroll.contentView.bounds.origin.y)
+        return Draft(text: editor.string, selectionLocation: range.location, selectionLength: range.length, scrollY: scroll.contentView.bounds.origin.y, highlightLanguage: highlightLanguage.rawValue)
     }
 
     func undoManager(for view: NSTextView) -> UndoManager? { history }
@@ -176,6 +192,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
                 let result = try await ScriptEngine.run(ScriptRequest(toolID: id, text: draft.text, selectionLocation: draft.selectionLocation, selectionLength: draft.selectionLength))
                 if result.error == nil, result.text != text {
                     replaceText(result.text, selection: NSRange(location: result.selectionLocation, length: result.selectionLength))
+
                 }
                 isError = result.error != nil
                 message = result.error ?? result.info ?? "处理完成"

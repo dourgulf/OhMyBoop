@@ -1,0 +1,3 @@
+// swift-tools-version: 5.9
+import PackageDescription
+let package = Package(name: "BoopGrammars", products: [.library(name: "BoopGrammars", targets: ["TreeSitterJSON", "TreeSitterYAML", "TreeSitterJavaScript"])], targets: [.target(name: "TreeSitterJSON", sources: ["src/parser.c"], publicHeadersPath: "include", cSettings: [.headerSearchPath("src")]),.target(name: "TreeSitterYAML", sources: ["src/parser.c", "src/scanner.c"], publicHeadersPath: "include", cSettings: [.headerSearchPath("src")]),.target(name: "TreeSitterJavaScript", sources: ["src/parser.c", "src/scanner.c"], publicHeadersPath: "include", cSettings: [.headerSearchPath("src")])])

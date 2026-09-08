@@ -1,0 +1,409 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3DDE1713857616B784CAD679 /* SwiftTreeSitter in Frameworks */ = {isa = PBXBuildFile; productRef = C5D208AC9E4CBD3EC9CACF33 /* SwiftTreeSitter */; };
+		48FA9AA5B3EDB91AC22D755E /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21ADA9ABBDF7EA9F9C005492 /* Workspace.swift */; };
+		4FCA4BB9CE07C442BEF9BEE5 /* BoopGrammars in Frameworks */ = {isa = PBXBuildFile; productRef = 90DA791CBC5AD1F1FA8DDC8E /* BoopGrammars */; };
+		750B9DC578FC226B659723EA /* scripts in Resources */ = {isa = PBXBuildFile; fileRef = C152611C5DA38FFAF081CA1D /* scripts */; };
+		7DD68FFBDCE8D2EA6D5B3F55 /* Catalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD18C74EB1567E08B8C420F /* Catalog.swift */; };
+		A1837BFE92F4826EB70CC422 /* ScriptEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */; };
+		AF3B671D85DD223822DC1B3B /* Highlighting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107758A798518553C2841613 /* Highlighting.swift */; };
+		C33853BDC0484C9D63CD7913 /* queries in Resources */ = {isa = PBXBuildFile; fileRef = C6593C29CE1B27A3E9343C5E /* queries */; };
+		EB5EBDBBD6CD7C79BBF9C6AF /* OhMyBoopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */; };
+		EE925B2A882745DA89A8D3B7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6E16A8EBC4C0EF1370DFC4 /* ContentView.swift */; };
+		F2A2B2395BC3F0E340CDE2E0 /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		107758A798518553C2841613 /* Highlighting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Highlighting.swift; sourceTree = "<group>"; };
+		1FD18C74EB1567E08B8C420F /* Catalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Catalog.swift; sourceTree = "<group>"; };
+		21ADA9ABBDF7EA9F9C005492 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
+		29B712DBD6C5CC9E8755ADA4 /* OhMyBoop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OhMyBoop.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OhMyBoopApp.swift; sourceTree = "<group>"; };
+		49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdPartyNotices.txt; sourceTree = "<group>"; };
+		77DCAB58073F4768C1AF1CE1 /* BoopGrammars */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BoopGrammars; path = Vendor/BoopGrammars; sourceTree = SOURCE_ROOT; };
+		AA6E16A8EBC4C0EF1370DFC4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C152611C5DA38FFAF081CA1D /* scripts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = scripts; path = Sources/OhMyBoop/Resources/scripts; sourceTree = SOURCE_ROOT; };
+		C6593C29CE1B27A3E9343C5E /* queries */ = {isa = PBXFileReference; lastKnownFileType = folder; name = queries; path = Sources/OhMyBoop/Resources/queries; sourceTree = SOURCE_ROOT; };
+		DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEngine.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9E16532CC69F76DF3F414798 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3DDE1713857616B784CAD679 /* SwiftTreeSitter in Frameworks */,
+				4FCA4BB9CE07C442BEF9BEE5 /* BoopGrammars in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		265F03E2060BB74F673807E5 /* OhMyBoop */ = {
+			isa = PBXGroup;
+			children = (
+				1FD18C74EB1567E08B8C420F /* Catalog.swift */,
+				AA6E16A8EBC4C0EF1370DFC4 /* ContentView.swift */,
+				107758A798518553C2841613 /* Highlighting.swift */,
+				3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */,
+				DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */,
+				21ADA9ABBDF7EA9F9C005492 /* Workspace.swift */,
+			);
+			name = OhMyBoop;
+			path = Sources/OhMyBoop;
+			sourceTree = "<group>";
+		};
+		2B507D126EFA0BBE7F9DE3A8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				29B712DBD6C5CC9E8755ADA4 /* OhMyBoop.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6C5BEF1A63B119EC42CFDA31 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				77DCAB58073F4768C1AF1CE1 /* BoopGrammars */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		76D7664A45FA5165219059D2 = {
+			isa = PBXGroup;
+			children = (
+				C6593C29CE1B27A3E9343C5E /* queries */,
+				C152611C5DA38FFAF081CA1D /* scripts */,
+				265F03E2060BB74F673807E5 /* OhMyBoop */,
+				6C5BEF1A63B119EC42CFDA31 /* Packages */,
+				E5A82FCC9A49796A25C0CC9E /* Resources */,
+				2B507D126EFA0BBE7F9DE3A8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E5A82FCC9A49796A25C0CC9E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */,
+			);
+			name = Resources;
+			path = Sources/OhMyBoop/Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		332617328D3003ED539A9BCD /* OhMyBoop */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CBC619BEB1213BBBBBEE925B /* Build configuration list for PBXNativeTarget "OhMyBoop" */;
+			buildPhases = (
+				C997B247F511DA5BB115442A /* Sources */,
+				77B284E07ADB88FF99FFAF44 /* Resources */,
+				9E16532CC69F76DF3F414798 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OhMyBoop;
+			packageProductDependencies = (
+				C5D208AC9E4CBD3EC9CACF33 /* SwiftTreeSitter */,
+				90DA791CBC5AD1F1FA8DDC8E /* BoopGrammars */,
+			);
+			productName = OhMyBoop;
+			productReference = 29B712DBD6C5CC9E8755ADA4 /* OhMyBoop.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		335A89BB7D6334D20DD173A8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					332617328D3003ED539A9BCD = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = D4D5789C7BB136C86326E3EB /* Build configuration list for PBXProject "OhMyBoop" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 76D7664A45FA5165219059D2;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				04EF7B1CE5650A28FA98EC2A /* XCRemoteSwiftPackageReference "swift-tree-sitter" */,
+				B10F8C423635D45085AC0582 /* XCLocalSwiftPackageReference "Vendor/BoopGrammars" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2B507D126EFA0BBE7F9DE3A8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				332617328D3003ED539A9BCD /* OhMyBoop */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		77B284E07ADB88FF99FFAF44 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F2A2B2395BC3F0E340CDE2E0 /* ThirdPartyNotices.txt in Resources */,
+				C33853BDC0484C9D63CD7913 /* queries in Resources */,
+				750B9DC578FC226B659723EA /* scripts in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C997B247F511DA5BB115442A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7DD68FFBDCE8D2EA6D5B3F55 /* Catalog.swift in Sources */,
+				EE925B2A882745DA89A8D3B7 /* ContentView.swift in Sources */,
+				AF3B671D85DD223822DC1B3B /* Highlighting.swift in Sources */,
+				EB5EBDBBD6CD7C79BBF9C6AF /* OhMyBoopApp.swift in Sources */,
+				A1837BFE92F4826EB70CC422 /* ScriptEngine.swift in Sources */,
+				48FA9AA5B3EDB91AC22D755E /* Workspace.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AB679A6DC7EB2890F61C2316 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = OhMyBoop;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 lidawen";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.lidawen.OhMyBoop;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B644A13517AF860B1C203342 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E30C74F5C96BCBD91A97DCF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		E3AE586592DCA929D0353BFA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = OhMyBoop;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 lidawen";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.lidawen.OhMyBoop;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CBC619BEB1213BBBBBEE925B /* Build configuration list for PBXNativeTarget "OhMyBoop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E3AE586592DCA929D0353BFA /* Debug */,
+				AB679A6DC7EB2890F61C2316 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D4D5789C7BB136C86326E3EB /* Build configuration list for PBXProject "OhMyBoop" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B644A13517AF860B1C203342 /* Debug */,
+				E30C74F5C96BCBD91A97DCF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		B10F8C423635D45085AC0582 /* XCLocalSwiftPackageReference "Vendor/BoopGrammars" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/BoopGrammars;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		04EF7B1CE5650A28FA98EC2A /* XCRemoteSwiftPackageReference "swift-tree-sitter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tree-sitter/swift-tree-sitter.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.25.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		90DA791CBC5AD1F1FA8DDC8E /* BoopGrammars */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BoopGrammars;
+		};
+		C5D208AC9E4CBD3EC9CACF33 /* SwiftTreeSitter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04EF7B1CE5650A28FA98EC2A /* XCRemoteSwiftPackageReference "swift-tree-sitter" */;
+			productName = SwiftTreeSitter;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 335A89BB7D6334D20DD173A8 /* Project object */;
+}
