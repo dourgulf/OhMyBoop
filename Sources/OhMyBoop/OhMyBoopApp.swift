@@ -65,6 +65,16 @@ struct OhMyBoopApp: App {
         .windowStyle(.titleBar)
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandMenu("处理") {
+                if let id = workspace.selectedID {
+                    let session = workspace.session(for: id)
+                    if let action = session.lastAction {
+                        Button(action.title) { session.run(action) }
+                            .keyboardShortcut(.return, modifiers: .command)
+                            .disabled(session.isRunning)
+                    }
+                }
+            }
         }
     }
 }

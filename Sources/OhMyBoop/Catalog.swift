@@ -18,28 +18,7 @@ struct Tool: Identifiable, Decodable, Hashable {
         tags = try values.decodeIfPresent(String.self, forKey: .tags) ?? ""
     }
 
-    var category: String {
-        let key = id.lowercased()
-        if key.contains("format") || key.contains("minify") { return "格式化与压缩" }
-        if key.contains("json") || key.contains("yaml") || key.contains("csv") || key.contains("strings") { return "数据转换" }
-        if key.contains("sha") || key == "md5" || key == "rot13" { return "哈希与加密" }
-        if key.contains("encode") || key.contains("decode") || key.contains("url") || key.contains("ascii") { return "编码与解码" }
-        if key.contains("date") || key.contains("timestamp") || key.contains("utc") { return "日期与时间" }
-        if key.contains("decimal") || key.contains("binary") || key.contains("hex") || key.contains("sum") { return "数字与颜色" }
-        return "文本工具"
-    }
 
-    var symbol: String {
-        switch category {
-        case "格式化与压缩": "curlybraces"
-        case "数据转换": "arrow.left.arrow.right"
-        case "哈希与加密": "number"
-        case "编码与解码": "link"
-        case "日期与时间": "clock"
-        case "数字与颜色": "number.square"
-        default: "text.alignleft"
-        }
-    }
 }
 
 enum Catalog {
@@ -54,7 +33,6 @@ enum Catalog {
         return Bundle.main.url(forResource: "scripts", withExtension: nil)!
         #endif
     }()
-    static let categories = ["格式化与压缩", "数据转换", "编码与解码", "哈希与加密", "文本工具", "数字与颜色", "日期与时间"]
 
     static func load() throws -> [Tool] {
         try FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)
