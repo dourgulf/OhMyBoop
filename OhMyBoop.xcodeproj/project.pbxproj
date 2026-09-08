@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3DDE1713857616B784CAD679 /* Highlighter in Frameworks */ = {isa = PBXBuildFile; productRef = 134C7366C0B9F89E540F00AE /* Highlighter */; };
+		3DDE1713857616B784CAD679 /* SwiftTreeSitter in Frameworks */ = {isa = PBXBuildFile; productRef = C5D208AC9E4CBD3EC9CACF33 /* SwiftTreeSitter */; };
 		48FA9AA5B3EDB91AC22D755E /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21ADA9ABBDF7EA9F9C005492 /* Workspace.swift */; };
+		4FCA4BB9CE07C442BEF9BEE5 /* BoopGrammars in Frameworks */ = {isa = PBXBuildFile; productRef = 90DA791CBC5AD1F1FA8DDC8E /* BoopGrammars */; };
 		750B9DC578FC226B659723EA /* scripts in Resources */ = {isa = PBXBuildFile; fileRef = C152611C5DA38FFAF081CA1D /* scripts */; };
 		7DD68FFBDCE8D2EA6D5B3F55 /* Catalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD18C74EB1567E08B8C420F /* Catalog.swift */; };
 		A1837BFE92F4826EB70CC422 /* ScriptEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */; };
 		AF3B671D85DD223822DC1B3B /* Highlighting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107758A798518553C2841613 /* Highlighting.swift */; };
+		C33853BDC0484C9D63CD7913 /* queries in Resources */ = {isa = PBXBuildFile; fileRef = C6593C29CE1B27A3E9343C5E /* queries */; };
 		EB5EBDBBD6CD7C79BBF9C6AF /* OhMyBoopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */; };
 		EE925B2A882745DA89A8D3B7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6E16A8EBC4C0EF1370DFC4 /* ContentView.swift */; };
 		F2A2B2395BC3F0E340CDE2E0 /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */; };
@@ -25,8 +27,10 @@
 		29B712DBD6C5CC9E8755ADA4 /* OhMyBoop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OhMyBoop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OhMyBoopApp.swift; sourceTree = "<group>"; };
 		49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdPartyNotices.txt; sourceTree = "<group>"; };
+		77DCAB58073F4768C1AF1CE1 /* BoopGrammars */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BoopGrammars; path = Vendor/BoopGrammars; sourceTree = SOURCE_ROOT; };
 		AA6E16A8EBC4C0EF1370DFC4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C152611C5DA38FFAF081CA1D /* scripts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = scripts; path = Sources/OhMyBoop/Resources/scripts; sourceTree = SOURCE_ROOT; };
+		C6593C29CE1B27A3E9343C5E /* queries */ = {isa = PBXFileReference; lastKnownFileType = folder; name = queries; path = Sources/OhMyBoop/Resources/queries; sourceTree = SOURCE_ROOT; };
 		DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -35,7 +39,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3DDE1713857616B784CAD679 /* Highlighter in Frameworks */,
+				3DDE1713857616B784CAD679 /* SwiftTreeSitter in Frameworks */,
+				4FCA4BB9CE07C442BEF9BEE5 /* BoopGrammars in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,11 +69,21 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		6C5BEF1A63B119EC42CFDA31 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				77DCAB58073F4768C1AF1CE1 /* BoopGrammars */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		76D7664A45FA5165219059D2 = {
 			isa = PBXGroup;
 			children = (
+				C6593C29CE1B27A3E9343C5E /* queries */,
 				C152611C5DA38FFAF081CA1D /* scripts */,
 				265F03E2060BB74F673807E5 /* OhMyBoop */,
+				6C5BEF1A63B119EC42CFDA31 /* Packages */,
 				E5A82FCC9A49796A25C0CC9E /* Resources */,
 				2B507D126EFA0BBE7F9DE3A8 /* Products */,
 			);
@@ -100,7 +115,8 @@
 			);
 			name = OhMyBoop;
 			packageProductDependencies = (
-				134C7366C0B9F89E540F00AE /* Highlighter */,
+				C5D208AC9E4CBD3EC9CACF33 /* SwiftTreeSitter */,
+				90DA791CBC5AD1F1FA8DDC8E /* BoopGrammars */,
 			);
 			productName = OhMyBoop;
 			productReference = 29B712DBD6C5CC9E8755ADA4 /* OhMyBoop.app */;
@@ -130,7 +146,8 @@
 			mainGroup = 76D7664A45FA5165219059D2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				643C91FB63A67CFE34A809A2 /* XCRemoteSwiftPackageReference "HighlighterSwift" */,
+				04EF7B1CE5650A28FA98EC2A /* XCRemoteSwiftPackageReference "swift-tree-sitter" */,
+				B10F8C423635D45085AC0582 /* XCLocalSwiftPackageReference "Vendor/BoopGrammars" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2B507D126EFA0BBE7F9DE3A8 /* Products */;
@@ -148,6 +165,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F2A2B2395BC3F0E340CDE2E0 /* ThirdPartyNotices.txt in Resources */,
+				C33853BDC0484C9D63CD7913 /* queries in Resources */,
 				750B9DC578FC226B659723EA /* scripts in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -357,22 +375,33 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		B10F8C423635D45085AC0582 /* XCLocalSwiftPackageReference "Vendor/BoopGrammars" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/BoopGrammars;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
-		643C91FB63A67CFE34A809A2 /* XCRemoteSwiftPackageReference "HighlighterSwift" */ = {
+		04EF7B1CE5650A28FA98EC2A /* XCRemoteSwiftPackageReference "swift-tree-sitter" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/smittytone/HighlighterSwift.git";
+			repositoryURL = "https://github.com/tree-sitter/swift-tree-sitter.git";
 			requirement = {
 				kind = exactVersion;
-				version = 3.1.0;
+				version = 0.25.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		134C7366C0B9F89E540F00AE /* Highlighter */ = {
+		90DA791CBC5AD1F1FA8DDC8E /* BoopGrammars */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 643C91FB63A67CFE34A809A2 /* XCRemoteSwiftPackageReference "HighlighterSwift" */;
-			productName = Highlighter;
+			productName = BoopGrammars;
+		};
+		C5D208AC9E4CBD3EC9CACF33 /* SwiftTreeSitter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04EF7B1CE5650A28FA98EC2A /* XCRemoteSwiftPackageReference "swift-tree-sitter" */;
+			productName = SwiftTreeSitter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

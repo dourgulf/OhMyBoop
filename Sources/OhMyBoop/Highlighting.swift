@@ -1,9 +1,12 @@
 // Created by lidawen.
 import AppKit
-import Highlighter
+import SwiftTreeSitter
+import TreeSitterJSON
+import TreeSitterYAML
+import TreeSitterJavaScript
 
 enum HighlightLanguage: String, CaseIterable, Identifiable, Sendable {
-    case automatic, plaintext, json, yaml, xml, css, sql, javascript, bash, swift, python, markdown
+    case automatic, plaintext, json, yaml, javascript
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -15,9 +18,6 @@ enum HighlightLanguage: String, CaseIterable, Identifiable, Sendable {
 
     static func hint(for tool: String) -> String? {
         if ["FormatJSON", "MinifyJSON", "SortJSON"].contains(tool) { return "json" }
-        if tool.contains("XML") || tool == "AndroidIOSStrings" { return "xml" }
-        if tool.contains("SQL") { return "sql" }
-        if tool.contains("CSS") { return "css" }
         if tool == "EvalJavascript" { return "javascript" }
         return nil
     }
@@ -33,48 +33,107 @@ struct HighlightResult: @unchecked Sendable {
     var background: NSColor?
     var status: String
     var milliseconds: Double = 0
+    var parseMilliseconds: Double = 0
+    var incremental: Bool = false
 }
 
-// One actor owns the JSContext. It is never used concurrently or on the UI actor.
+// Each editor owns its parser and previous tree. Parsing and queries run off the UI actor.
 actor HighlightEngine {
     static let shared = HighlightEngine()
     static let explicitLimit = 100_000
     static let automaticLimit = 8_000
-    private var highlighter: Highlighter?
-    private var currentTheme: String?
+    private var parser: Parser?
+    private var query: Query?
+    private var tree: MutableTree?
+    private var previous: [UInt16] = []
+    private var currentLanguage: String?
 
     func render(_ text: String, language: String?, dark: Bool, enforceLimit: Bool = true) -> HighlightResult {
+        let start = Date()
         guard !Task.isCancelled else { return HighlightResult(status: "已取消") }
-        guard !text.isEmpty else { return HighlightResult(status: "等待输入") }
+        guard !text.isEmpty else { tree = nil; previous = []; return HighlightResult(status: "等待输入") }
         let limit = language == nil ? Self.automaticLimit : Self.explicitLimit
         guard !enforceLimit || text.utf16.count <= limit else {
+            tree = nil; previous = []
             return HighlightResult(status: language == nil ? "文本较长，请指定语言以启用高亮" : "大文本使用纯文本显示")
         }
-        let start = Date()
-        if highlighter == nil { highlighter = Highlighter() }
-        guard let highlighter else { return HighlightResult(status: "高亮资源不可用，已使用纯文本") }
-        let theme = dark ? "github-dark" : "github"
-        if currentTheme != theme {
-            guard highlighter.setTheme(theme, withFont: "Menlo", ofSize: 14) else {
-                return HighlightResult(status: "主题不可用，已使用纯文本")
+        let units = Array(text.utf16)
+        // Conservative application heuristic; Tree-sitter itself does not detect languages.
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let selected = language ?? ((trimmed.hasPrefix("{") || trimmed.hasPrefix("[")) ? "json" : "")
+        guard ["json", "yaml", "javascript"].contains(selected) else {
+            tree = nil; previous = []
+            return HighlightResult(status: language == nil ? "请选择语言，当前使用纯文本" : "不支持此语言，已使用纯文本")
+        }
+        do {
+            if currentLanguage != selected || parser == nil {
+                let pointer = selected == "json" ? tree_sitter_json() : selected == "yaml" ? tree_sitter_yaml() : tree_sitter_javascript()
+                let grammar = Language(pointer!)
+                let newParser = Parser()
+                try newParser.setLanguage(grammar)
+                newParser.timeout = 1
+                let url = Catalog.root.deletingLastPathComponent().appendingPathComponent("queries/\(selected).scm")
+                let newQuery = try Query(language: grammar, url: url)
+                parser = newParser; query = newQuery; tree = nil; previous = []; currentLanguage = selected
             }
-            currentTheme = theme
-        }
-        highlighter.ignoreIllegals = true
-        if let language, !highlighter.supportedLanguages().contains(language) {
-            return HighlightResult(status: "不支持此语言，已使用纯文本")
-        }
-        guard let attributed = highlighter.highlight(text, as: language),
-              Array(attributed.string.utf16) == Array(text.utf16) else {
-            return HighlightResult(status: "高亮结果不兼容，已保留纯文本")
-        }
-        var spans: [HighlightSpan] = []
-        attributed.enumerateAttribute(.foregroundColor, in: NSRange(location: 0, length: attributed.length)) { value, range, _ in
-            if let color = (value as? NSColor)?.usingColorSpace(.sRGB) {
-                spans.append(HighlightSpan(range: range, color: color))
+            guard let parser, let query else { return HighlightResult(status: "解析器不可用，已使用纯文本") }
+            let incremental = tree != nil && previous != units
+            if incremental {
+                var prefix = 0
+                while prefix < min(previous.count, units.count) && previous[prefix] == units[prefix] { prefix += 1 }
+                // Keep edits on Unicode scalar boundaries, including emoji sharing a high surrogate.
+                if prefix > 0 && prefix < units.count && (0xDC00...0xDFFF).contains(units[prefix]) { prefix -= 1 }
+                var suffix = 0
+                while suffix < min(previous.count, units.count) - prefix && previous[previous.count - 1 - suffix] == units[units.count - 1 - suffix] { suffix += 1 }
+                if suffix > 0 && (0xDC00...0xDFFF).contains(units[units.count - suffix]) { suffix -= 1 }
+                let oldEnd = previous.count - suffix, newEnd = units.count - suffix
+                tree?.edit(InputEdit(startByte: prefix * 2, oldEndByte: oldEnd * 2, newEndByte: newEnd * 2,
+                                     startPoint: Self.point(previous, prefix), oldEndPoint: Self.point(previous, oldEnd), newEndPoint: Self.point(units, newEnd)))
             }
+            let parseStart = Date()
+            if tree == nil || previous != units {
+                let data = text.data(using: .utf16LittleEndian)!
+                tree = parser.parse(tree: tree, readBlock: { byte, _ in
+                    let offset = Int(byte)
+                    guard offset < data.count else { return nil }
+                    return data.subdata(in: offset..<min(offset + 8192, data.count))
+                })
+            }
+            let parseMS = Date().timeIntervalSince(parseStart) * 1000
+            guard let tree else { parser.reset(); previous = []; return HighlightResult(status: "解析超时，已使用纯文本") }
+            previous = units
+            let captures = query.execute(in: tree).resolve(with: .init(string: text)).highlights()
+            var spans = [HighlightSpan(range: NSRange(location: 0, length: units.count), color: Self.color("text", dark: dark))]
+            for capture in captures {
+                guard NSMaxRange(capture.range) <= units.count else { continue }
+                spans.append(HighlightSpan(range: capture.range, color: Self.color(capture.name, dark: dark)))
+            }
+            return HighlightResult(spans: spans, background: Self.rgb(dark ? 0x0d1117 : 0xffffff), status: "\(selected.uppercased()) · Tree-sitter", milliseconds: Date().timeIntervalSince(start) * 1000, parseMilliseconds: parseMS, incremental: incremental)
+        } catch {
+            tree = nil; previous = []; parser = nil
+            return HighlightResult(status: "语法资源不可用，已使用纯文本")
         }
-        return HighlightResult(spans: spans, background: highlighter.theme.themeBackgroundColour?.usingColorSpace(.sRGB), status: language?.uppercased() ?? "自动高亮", milliseconds: Date().timeIntervalSince(start) * 1000)
+    }
+
+    private static func point(_ units: [UInt16], _ end: Int) -> Point {
+        var row = 0, column = 0
+        for unit in units.prefix(end) {
+            if unit == 10 { row += 1; column = 0 } else { column += 2 }
+        }
+        return Point(row: row, column: column)
+    }
+    private static func rgb(_ value: Int) -> NSColor {
+        NSColor(srgbRed: Double((value >> 16) & 255) / 255, green: Double((value >> 8) & 255) / 255, blue: Double(value & 255) / 255, alpha: 1)
+    }
+    private static func color(_ name: String, dark: Bool) -> NSColor {
+        let value: Int
+        if name.contains("comment") { value = dark ? 0x8b949e : 0x6a737d }
+        else if name.contains("key") || name.contains("property") || name.contains("number") || name.contains("constant") || name.contains("boolean") { value = dark ? 0x79c0ff : 0x005cc5 }
+        else if name.hasPrefix("string") { value = dark ? 0xa5d6ff : 0x032f62 }
+        else if name.hasPrefix("keyword") || name.hasPrefix("operator") { value = dark ? 0xff7b72 : 0xd73a49 }
+        else if name.hasPrefix("function") { value = dark ? 0xd2a8ff : 0x6f42c1 }
+        else { value = dark ? 0xc9d1d9 : 0x24292e }
+        return rgb(value)
     }
 }
 
@@ -83,6 +142,7 @@ final class HighlightTextView: NSTextView {
     var language: HighlightLanguage = .automatic { didSet { scheduleHighlight() } }
     var automaticHint: String? { didSet { scheduleHighlight() } }
     var onHighlight: ((String) -> Void)?
+    private let engine = HighlightEngine()
     private var generation = 0
     private var highlightTask: Task<Void, Never>?
     private(set) var lastAppliedGeneration = 0
@@ -106,13 +166,14 @@ final class HighlightTextView: NSTextView {
         highlightTask?.cancel()
         guard language != .plaintext else { clearHighlight(); onHighlight?("纯文本"); return }
         guard !hasMarkedText() else { return }
+        let engine = self.engine
         let source = string
         let selectedLanguage = language == .automatic ? automaticHint : language.rawValue
         let dark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         highlightTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(180))
             guard !Task.isCancelled else { return }
-            let result = await HighlightEngine.shared.render(source, language: selectedLanguage, dark: dark)
+            let result = await engine.render(source, language: selectedLanguage, dark: dark)
             guard !Task.isCancelled, let self, self.generation == version,
                   !self.hasMarkedText(), self.string == source else { return }
             self.apply(result)

@@ -8,14 +8,7 @@ final class HighlightingTests: XCTestCase {
         let samples = [
             "json": "{\"name\":\"你好 🌍 <>&\\\"\",\"n\":42,\"ok\":true}",
             "yaml": "name: hello\nitems:\n  - 123\n  - true",
-            "xml": "<root id=\"1\"><item>Hello &amp; world</item></root>",
-            "sql": "SELECT id FROM users WHERE id = 42; -- comment",
             "javascript": "const x = {name: 'hello', ok: true}; // comment",
-            "css": "body { color: #ff0000; margin: 12px; }",
-            "bash": "#!/bin/bash\necho \"$HOME\" # hello",
-            "swift": "let message = \"你好\"\nprint(message)",
-            "python": "def hello():\n    return True",
-            "markdown": "# Title\n**bold** and `code`"
         ]
         let engine = HighlightEngine()
         for (language, source) in samples {
@@ -32,8 +25,7 @@ final class HighlightingTests: XCTestCase {
         let engine = HighlightEngine()
         for text in ["{\"incomplete\":", "{\n\"emoji\": \"👨‍👩‍👧‍👦 e\u{301}\"\n}", "a\r\nb\rc\n", "<>&amp;&#123;\"'", "\t\t leading\n\n", "\u{0}test"] {
             let result = await engine.render(text, language: "json", dark: false)
-            // The adapter only emits ranges after exact UTF-16 equality; any upstream
-            // HTML normalization must become a plain-text fallback rather than editing input.
+            // Tree-sitter offsets are UTF-16 ranges over the original input.
             XCTAssertTrue(!result.spans.isEmpty || result.status.contains("纯文本"), result.status)
         }
         let invalid = await engine.render("hello", language: "does-not-exist", dark: false)
@@ -43,6 +35,39 @@ final class HighlightingTests: XCTestCase {
         XCTAssertTrue(large.spans.isEmpty)
         let autoLarge = await engine.render(String(repeating: "a", count: 8_001), language: nil, dark: false)
         XCTAssertTrue(autoLarge.status.contains("指定语言"))
+    }
+
+    func testIncrementalEditsMatchFreshParseAcrossUnicodeAndLanguageChanges() async {
+        let engine = HighlightEngine()
+        let samples: [(String, [String])] = [
+            ("json", ["{\"name\":\"😀\",\"n\":42}", "{\"name\":\"😁\",\"n\":42}", "{\r\n\"name\":\"你好 e\u{301}\",\"n\":4}", "{\"name\":", "[]", "", "[true,null]"]),
+            ("yaml", ["key: hello\nitems:\n  - true", "key: '🌍'\nitems:\n  - 123\n  - false", "key:"]),
+            ("javascript", ["const x = 'hello'; // comment", "const x = `🌍`;\n/* comment */", "function f() { return 42; }", "function f( {", "const f = () => true;"])
+        ]
+        for (language, edits) in samples {
+            for (index, text) in edits.enumerated() {
+                let actual = await engine.render(text, language: language, dark: false)
+                let fresh = await HighlightEngine().render(text, language: language, dark: false)
+                XCTAssertEqual(actual.spans.map(\.range), fresh.spans.map(\.range), "\(language) edit \(index)")
+                XCTAssertEqual(actual.spans.map { $0.color.description }, fresh.spans.map { $0.color.description })
+                if index == 1 { XCTAssertTrue(actual.incremental) }
+                if index == 0 { XCTAssertFalse(actual.incremental) }
+            }
+        }
+    }
+
+    func testDocumentIsolationAndConservativeAutomaticMode() async {
+        let a = HighlightEngine(), b = HighlightEngine()
+        _ = await a.render("{\"a\":1}", language: "json", dark: false)
+        let firstB = await b.render("{\"b\":2}", language: "json", dark: false)
+        XCTAssertFalse(firstB.incremental)
+        let editedA = await a.render("{\"a\":3}", language: "json", dark: true)
+        XCTAssertTrue(editedA.incremental)
+        let automatic = await a.render("[1, true]", language: nil, dark: false)
+        XCTAssertTrue(automatic.status.contains("JSON"))
+        let arbitrary = await a.render("ordinary prose: hello", language: nil, dark: false)
+        XCTAssertTrue(arbitrary.spans.isEmpty)
+        XCTAssertTrue(arbitrary.status.contains("请选择语言"))
     }
 
     @MainActor
@@ -140,13 +165,18 @@ final class HighlightingTests: XCTestCase {
 
     func testOptInPerformanceSamples() async throws {
         guard ProcessInfo.processInfo.environment["OHMYBOOP_BENCHMARK"] == "1" else { throw XCTSkip("Set OHMYBOOP_BENCHMARK=1 for full rendering benchmarks") }
-        let engine = HighlightEngine()
         for size in [10_000, 100_000, 1_000_000] {
+            let engine = HighlightEngine()
             let source = "[" + Array(repeating: "{\"name\":\"hello\",\"n\":42,\"ok\":true}", count: size / 35).joined(separator: ",\n") + "]"
             let result = await engine.render(source, language: "json", dark: false, enforceLimit: false)
             XCTAssertFalse(result.spans.isEmpty)
-            print("BENCH explicit JSON utf16=\(source.utf16.count) ms=\(result.milliseconds) ranges=\(result.spans.count)")
+            print("BENCH full JSON utf16=\(source.utf16.count) ms=\(result.milliseconds) parse=\(result.parseMilliseconds) ranges=\(result.spans.count)")
+            let edited = String(source.dropLast()) + " "+"]"
+            let edit = await engine.render(edited, language: "json", dark: false, enforceLimit: false)
+            XCTAssertTrue(edit.incremental)
+            print("BENCH edit JSON utf16=\(edited.utf16.count) ms=\(edit.milliseconds) parse=\(edit.parseMilliseconds)")
         }
+        let engine = HighlightEngine()
         let source = String(repeating: "let count = 42; // sample\n", count: 100)
         let result = await engine.render(source, language: nil, dark: false, enforceLimit: false)
         print("BENCH automatic utf16=\(source.utf16.count) ms=\(result.milliseconds) ranges=\(result.spans.count)")

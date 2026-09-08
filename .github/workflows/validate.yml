@@ -13,12 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Test scripts, persistence and native highlighting
-        run: swift test
+        run: swift test --disable-swift-testing
       - name: Build and verify signed app
         run: zsh scripts/build-app.sh
       - name: Check packaged highlighter resources
         run: |
-          dist/HighlighterValidation/OhMyBoop.app/Contents/MacOS/OhMyBoop --validate-highlighter /tmp/highlighter-resources.json
+          dist/TreeSitterValidation/OhMyBoop.app/Contents/MacOS/OhMyBoop --validate-highlighter /tmp/highlighter-resources.json
           cat /tmp/highlighter-resources.json
       - uses: actions/upload-artifact@v4
         if: always()

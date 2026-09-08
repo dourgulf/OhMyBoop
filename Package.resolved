@@ -1,13 +1,22 @@
 {
-  "originHash" : "f3c8bd231d2d1a38ad60aa80a1539c528c2f9405fdfcb9b593996d27434999dc",
+  "originHash" : "da283bb34ae87e8a30901c249a8d7dd7bfbd7d0daa639c72377bf0151d67329c",
   "pins" : [
     {
-      "identity" : "highlighterswift",
+      "identity" : "swift-tree-sitter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/smittytone/HighlighterSwift.git",
+      "location" : "https://github.com/tree-sitter/swift-tree-sitter.git",
       "state" : {
-        "revision" : "fe7aae9c9b31d3b296fd3d2dd575e1a207bb29e0",
-        "version" : "3.1.0"
+        "revision" : "08ef81eb8620617b55b08868126707ad72bf754f",
+        "version" : "0.25.0"
+      }
+    },
+    {
+      "identity" : "tree-sitter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tree-sitter/tree-sitter",
+      "state" : {
+        "revision" : "da6fe9beb4f7f67beb75914ca8e0d48ae48d6406",
+        "version" : "0.25.10"
       }
     }
   ],

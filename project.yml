@@ -4,9 +4,11 @@ options:
   deploymentTarget:
     macOS: "14.0"
 packages:
-  HighlighterSwift:
-    url: https://github.com/smittytone/HighlighterSwift.git
-    exactVersion: 3.1.0
+  SwiftTreeSitter:
+    url: https://github.com/tree-sitter/swift-tree-sitter.git
+    exactVersion: 0.25.0
+  BoopGrammars:
+    path: Vendor/BoopGrammars
 targets:
   OhMyBoop:
     type: application
@@ -17,11 +19,16 @@ targets:
       - path: Sources/OhMyBoop/Resources/scripts
         type: folder
         buildPhase: resources
+      - path: Sources/OhMyBoop/Resources/queries
+        type: folder
+        buildPhase: resources
       - path: Sources/OhMyBoop/Resources/ThirdPartyNotices.txt
         buildPhase: resources
     dependencies:
-      - package: HighlighterSwift
-        product: Highlighter
+      - package: SwiftTreeSitter
+        product: SwiftTreeSitter
+      - package: BoopGrammars
+        product: BoopGrammars
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.lidawen.OhMyBoop
