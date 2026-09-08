@@ -35,6 +35,7 @@ struct HighlightResult: @unchecked Sendable {
     var milliseconds: Double = 0
     var parseMilliseconds: Double = 0
     var incremental: Bool = false
+    var paintedRange: NSRange?
 }
 
 // Each editor owns its parser and previous tree. Parsing and queries run off the UI actor.
@@ -48,7 +49,7 @@ actor HighlightEngine {
     private var previous: [UInt16] = []
     private var currentLanguage: String?
 
-    func render(_ text: String, language: String?, dark: Bool, enforceLimit: Bool = true) -> HighlightResult {
+    func render(_ text: String, language: String?, dark: Bool, enforceLimit: Bool = true, visibleRange: NSRange? = nil) -> HighlightResult {
         let start = Date()
         guard !Task.isCancelled else { return HighlightResult(status: "已取消") }
         guard !text.isEmpty else { tree = nil; previous = []; return HighlightResult(status: "等待输入") }
@@ -102,13 +103,22 @@ actor HighlightEngine {
             let parseMS = Date().timeIntervalSince(parseStart) * 1000
             guard let tree else { parser.reset(); previous = []; return HighlightResult(status: "解析超时，已使用纯文本") }
             previous = units
-            let captures = query.execute(in: tree).resolve(with: .init(string: text)).highlights()
-            var spans = [HighlightSpan(range: NSRange(location: 0, length: units.count), color: Self.color("text", dark: dark))]
+            guard !Task.isCancelled else { return HighlightResult(status: "已取消") }
+            let fullRange = NSRange(location: 0, length: units.count)
+            let paintRange = visibleRange.map { NSIntersectionRange($0, fullRange) } ?? fullRange
+            let cursor = query.execute(in: tree)
+            // Query the whole tree within a viewport range, preserving enclosing syntax context.
+            // A capture may extend beyond the viewport (multiline strings/comments).
+            cursor.setRange(paintRange)
+            let captures = paintRange.length == 0 ? [] : cursor.resolve(with: .init(string: text)).highlights()
+            var spans = [HighlightSpan(range: paintRange, color: Self.color("text", dark: dark))]
             for capture in captures {
                 guard NSMaxRange(capture.range) <= units.count else { continue }
-                spans.append(HighlightSpan(range: capture.range, color: Self.color(capture.name, dark: dark)))
+                let clipped = NSIntersectionRange(capture.range, paintRange)
+                guard clipped.length > 0 else { continue }
+                spans.append(HighlightSpan(range: clipped, color: Self.color(capture.name, dark: dark)))
             }
-            return HighlightResult(spans: spans, background: Self.rgb(dark ? 0x0d1117 : 0xffffff), status: "\(selected.uppercased()) · Tree-sitter", milliseconds: Date().timeIntervalSince(start) * 1000, parseMilliseconds: parseMS, incremental: incremental)
+            return HighlightResult(spans: spans, background: Self.rgb(dark ? 0x0d1117 : 0xffffff), status: "\(selected.uppercased()) · 语法高亮", milliseconds: Date().timeIntervalSince(start) * 1000, parseMilliseconds: parseMS, incremental: incremental, paintedRange: paintRange)
         } catch {
             tree = nil; previous = []; parser = nil
             return HighlightResult(status: "语法资源不可用，已使用纯文本")
@@ -146,6 +156,9 @@ final class HighlightTextView: NSTextView {
     private var generation = 0
     private var highlightTask: Task<Void, Never>?
     private(set) var lastAppliedGeneration = 0
+    private(set) var lastAppliedRange: NSRange?
+    private(set) var lastApplicationMilliseconds: Double = 0
+    private var requestedRange: NSRange?
 
     override func didChangeText() {
         super.didChangeText()
@@ -160,7 +173,30 @@ final class HighlightTextView: NSTextView {
         scheduleHighlight()
     }
 
-    func scheduleHighlight() {
+    // Scroll/resize requests reuse the parser tree; they do not wait for the typing debounce.
+    func scheduleViewportHighlight() {
+        guard requestedRange != viewportRange() else { return }
+        scheduleHighlight(delay: 30)
+    }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        scheduleViewportHighlight()
+    }
+
+    private func viewportRange() -> NSRange {
+        let full = NSRange(location: 0, length: (string as NSString).length)
+        guard let scroll = enclosingScrollView, let layoutManager, let textContainer,
+              scroll.contentSize.height > 0 else { return full }
+        var rect = visibleRect
+        rect = rect.insetBy(dx: 0, dy: -rect.height)
+        rect.origin.x -= textContainerOrigin.x
+        rect.origin.y -= textContainerOrigin.y
+        let glyphs = layoutManager.glyphRange(forBoundingRect: rect, in: textContainer)
+        return NSIntersectionRange(layoutManager.characterRange(forGlyphRange: glyphs, actualGlyphRange: nil), full)
+    }
+
+    func scheduleHighlight(delay: Int = 180) {
         generation += 1
         let version = generation
         highlightTask?.cancel()
@@ -168,12 +204,14 @@ final class HighlightTextView: NSTextView {
         guard !hasMarkedText() else { return }
         let engine = self.engine
         let source = string
+        let range = viewportRange()
+        requestedRange = range
         let selectedLanguage = language == .automatic ? automaticHint : language.rawValue
         let dark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
         highlightTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(180))
+            try? await Task.sleep(for: .milliseconds(delay))
             guard !Task.isCancelled else { return }
-            let result = await engine.render(source, language: selectedLanguage, dark: dark)
+            let result = await engine.render(source, language: selectedLanguage, dark: dark, visibleRange: range)
             guard !Task.isCancelled, let self, self.generation == version,
                   !self.hasMarkedText(), self.string == source else { return }
             self.apply(result)
@@ -183,12 +221,14 @@ final class HighlightTextView: NSTextView {
 
     private func clearHighlight() {
         layoutManager?.removeTemporaryAttribute(.foregroundColor, forCharacterRange: NSRange(location: 0, length: (string as NSString).length))
+        lastAppliedRange = nil
         backgroundColor = .textBackgroundColor
         enclosingScrollView?.backgroundColor = .textBackgroundColor
     }
 
     // Temporary layout attributes leave the document, typing attributes and undo untouched.
     private func apply(_ result: HighlightResult) {
+        let start = Date()
         clearHighlight()
         for span in result.spans {
             layoutManager?.addTemporaryAttribute(.foregroundColor, value: span.color, forCharacterRange: span.range)
@@ -197,6 +237,8 @@ final class HighlightTextView: NSTextView {
             backgroundColor = color
             enclosingScrollView?.backgroundColor = color
         }
+        lastAppliedRange = result.paintedRange
+        lastApplicationMilliseconds = Date().timeIntervalSince(start) * 1000
         onHighlight?(result.status)
     }
 }

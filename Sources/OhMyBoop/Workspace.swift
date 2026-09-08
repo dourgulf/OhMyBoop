@@ -117,7 +117,10 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         editor.language = highlightLanguage
         scroll.contentView.postsBoundsChangedNotifications = true
         scrollObserver = NotificationCenter.default.addObserver(forName: NSView.boundsDidChangeNotification, object: scroll.contentView, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.onChange?() }
+            MainActor.assumeIsolated {
+                (self?.backingScroll?.documentView as? HighlightTextView)?.scheduleViewportHighlight()
+                self?.onChange?()
+            }
         }
         return scroll
     }

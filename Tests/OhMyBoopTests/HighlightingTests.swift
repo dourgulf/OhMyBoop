@@ -56,6 +56,68 @@ final class HighlightingTests: XCTestCase {
         }
     }
 
+    func testViewportMatchesFullHighlightAcrossMultilineSyntaxAndEdits() async {
+        let samples = [
+            ("javascript", "/* start\n" + String(repeating: "你好 🌍 comment\n", count: 80) + "*/\nconst message = `first\nsecond 🌍\nlast`;"),
+            ("yaml", "message: |\n" + String(repeating: "  hello 🌍\n", count: 80) + "enabled: true\n"),
+            ("json", "[" + Array(repeating: "{\"name\":\"🌍\",\"n\":42}", count: 80).joined(separator: ",\n") + "]")
+        ]
+        for (language, text) in samples {
+            let engine = HighlightEngine()
+            for source in [text, "\n" + text, String(text.dropFirst(2))] {
+                for dark in [false, true] {
+                    let full = await HighlightEngine().render(source, language: language, dark: dark)
+                    for range in [NSRange(location: 0, length: 100), NSRange(location: 250, length: 120), NSRange(location: source.utf16.count - 80, length: 80)] {
+                        let visible = await engine.render(source, language: language, dark: dark, visibleRange: range)
+                        let expected = full.spans.compactMap { span -> HighlightSpan? in
+                            let clipped = NSIntersectionRange(span.range, range)
+                            return clipped.length > 0 ? HighlightSpan(range: clipped, color: span.color) : nil
+                        }
+                        XCTAssertEqual(visible.spans.map(\.range), expected.map(\.range), language)
+                        XCTAssertEqual(visible.spans.map { $0.color }, expected.map { $0.color }, language)
+                    }
+                }
+            }
+        }
+    }
+
+    @MainActor func testViewportScrollRecolorsWithoutChangingDocumentAndClearsOnFallback() async throws {
+        let source = "[\n" + Array(repeating: "{\"name\":\"hello 🌍\",\"n\":42}", count: 1500).joined(separator: ",\n") + "\n]"
+        let session = EditorSession(id: "FormatJSON", draft: Draft(text: source))
+        let scroll = session.scrollView
+        scroll.frame = NSRect(x: 0, y: 0, width: 500, height: 200)
+        let editor = scroll.documentView as! HighlightTextView
+        editor.layoutManager?.ensureLayout(for: editor.textContainer!)
+        try await awaitHighlight(editor)
+        let first = try XCTUnwrap(editor.lastAppliedRange)
+        XCTAssertLessThan(first.length, source.utf16.count / 4)
+        scroll.contentView.scroll(to: NSPoint(x: 0, y: 4000))
+        let snapshot = session.snapshot()
+        let previousGeneration = editor.lastAppliedGeneration
+        // Exercise the bounds notification path without manually scheduling a text change.
+        let deadline = Date().addingTimeInterval(10)
+        while editor.lastAppliedGeneration == previousGeneration && Date() < deadline {
+            try await Task.sleep(for: .milliseconds(25))
+        }
+        XCTAssertGreaterThan(editor.lastAppliedGeneration, previousGeneration)
+        let second = try XCTUnwrap(editor.lastAppliedRange)
+        XCTAssertGreaterThan(second.location, NSMaxRange(first))
+        XCTAssertNotNil(editor.layoutManager?.temporaryAttribute(.foregroundColor, atCharacterIndex: second.location, effectiveRange: nil))
+        XCTAssertNil(editor.layoutManager?.temporaryAttribute(.foregroundColor, atCharacterIndex: 0, effectiveRange: nil))
+        XCTAssertEqual(session.snapshot(), snapshot)
+        scroll.frame.size.height = 500
+        try await awaitHighlight(editor)
+        let resized = try XCTUnwrap(editor.lastAppliedRange)
+        XCTAssertGreaterThan(resized.length, second.length)
+        session.replaceText("{\"updated\":true}")
+        scroll.contentView.scroll(to: .zero)
+        try await awaitHighlight(editor)
+        XCTAssertEqual(editor.lastAppliedRange, NSRange(location: 0, length: editor.string.utf16.count))
+        session.highlightLanguage = .plaintext
+        XCTAssertNil(editor.layoutManager?.temporaryAttribute(.foregroundColor, atCharacterIndex: 0, effectiveRange: nil))
+        XCTAssertNil(editor.lastAppliedRange)
+    }
+
     func testDocumentIsolationAndConservativeAutomaticMode() async {
         let a = HighlightEngine(), b = HighlightEngine()
         _ = await a.render("{\"a\":1}", language: "json", dark: false)
@@ -163,6 +225,24 @@ final class HighlightingTests: XCTestCase {
         }
     }
 
+    @MainActor func testOptInViewportApplicationSamples() async throws {
+        guard ProcessInfo.processInfo.environment["OHMYBOOP_BENCHMARK"] == "1" else { throw XCTSkip("Set OHMYBOOP_BENCHMARK=1 for viewport benchmarks") }
+        let source = "[\n" + Array(repeating: "{\"name\":\"hello\",\"n\":42}", count: 3500).joined(separator: ",\n") + "\n]"
+        let session = EditorSession(id: "FormatJSON", draft: Draft(text: source))
+        session.scrollView.frame = NSRect(x: 0, y: 0, width: 600, height: 600)
+        let editor = session.scrollView.documentView as! HighlightTextView
+        editor.layoutManager?.ensureLayout(for: editor.textContainer!)
+        var samples: [Double] = []
+        for index in 0..<20 {
+            session.scrollView.contentView.scroll(to: NSPoint(x: 0, y: index * 1000))
+            try await awaitHighlight(editor)
+            XCTAssertNotNil(editor.lastAppliedRange)
+            samples.append(editor.lastApplicationMilliseconds)
+        }
+        samples.sort()
+        print("BENCH viewport UI application utf16=\(source.utf16.count) samples=20 median_ms=\(samples[10]) p95_ms=\(samples[18])")
+    }
+
     func testOptInPerformanceSamples() async throws {
         guard ProcessInfo.processInfo.environment["OHMYBOOP_BENCHMARK"] == "1" else { throw XCTSkip("Set OHMYBOOP_BENCHMARK=1 for full rendering benchmarks") }
         for size in [10_000, 100_000, 1_000_000] {
@@ -175,6 +255,16 @@ final class HighlightingTests: XCTestCase {
             let edit = await engine.render(edited, language: "json", dark: false, enforceLimit: false)
             XCTAssertTrue(edit.incremental)
             print("BENCH edit JSON utf16=\(edited.utf16.count) ms=\(edit.milliseconds) parse=\(edit.parseMilliseconds)")
+            var samples: [Double] = []
+            for index in 0..<20 {
+                let sample = String(source.dropLast()) + (index.isMultiple(of: 2) ? " " : "  ") + "]"
+                let viewport = await engine.render(sample, language: "json", dark: false, enforceLimit: false,
+                    visibleRange: NSRange(location: max(0, sample.utf16.count - 3000), length: 3000))
+                XCTAssertFalse(viewport.spans.isEmpty)
+                samples.append(viewport.milliseconds)
+            }
+            samples.sort()
+            print("BENCH viewport edit JSON utf16=\(source.utf16.count) samples=20 median_ms=\(samples[10]) p95_ms=\(samples[18])")
         }
         let engine = HighlightEngine()
         let source = String(repeating: "let count = 42; // sample\n", count: 100)
