@@ -4,6 +4,45 @@ import SwiftUI
 @testable import OhMyBoop
 
 final class HighlightingTests: XCTestCase {
+    @MainActor func testTabInsertsTwoSpacesWithUndoAndRespectsReadOnly() throws {
+        let session = EditorSession(id: "json", draft: Draft(text: "{}"))
+        let editor = try XCTUnwrap(session.scrollView.documentView as? HighlightTextView)
+        editor.setSelectedRange(NSRange(location: 1, length: 0))
+        let undo = try XCTUnwrap(editor.undoManager)
+        undo.beginUndoGrouping()
+        editor.insertTab(nil)
+        undo.endUndoGrouping()
+        XCTAssertEqual(session.text, "{  }")
+        XCTAssertEqual(editor.selectedRange(), NSRange(location: 3, length: 0))
+        undo.undo()
+        XCTAssertEqual(session.text, "{}")
+        let expectedWidth = ("  " as NSString).size(withAttributes: [.font: editor.font!]).width
+        XCTAssertEqual(editor.defaultParagraphStyle?.defaultTabInterval, expectedWidth)
+        XCTAssertTrue(editor.defaultParagraphStyle?.tabStops.isEmpty == true)
+        editor.isEditable = false
+        editor.insertTab(nil)
+        XCTAssertEqual(session.text, "{}")
+    }
+
+    func testScalarTypesHaveDistinctEffectiveColorsInBothThemes() async throws {
+        let samples = [
+            "json": "{\"title\":\"hello\",\"count\":42,\"enabled\":true,\"missing\":null}",
+            "yaml": "title: hello\ncount: 42\nenabled: true\nmissing: null\n",
+        ]
+        for (language, source) in samples {
+            for dark in [false, true] {
+                let result = await HighlightEngine().render(source, language: language, dark: dark)
+                // Resolve the final painted color, including overlapping key/string captures.
+                let colors = try ["title", "hello", "42", "true", "null"].map { token in
+                    let offset = (source as NSString).range(of: token).location
+                    return try XCTUnwrap(result.spans.last { NSLocationInRange(offset, $0.range) }?.color)
+                }
+                XCTAssertEqual(Set(colors.prefix(4).map { $0.description }).count, 4, "\(language), dark=\(dark)")
+                XCTAssertEqual(colors[3], colors[4], "Boolean and null share the literal color")
+            }
+        }
+    }
+
     func testLanguageSamplesAndThemesProduceColoredRanges() async {
         let samples = [
             "json": "{\"name\":\"你好 🌍 <>&\\\"\",\"n\":42,\"ok\":true}",

@@ -20,6 +20,7 @@ struct ScriptResult: Codable, Sendable {
     var selectionLength: Int
     var info: String?
     var error: String?
+    var errorOffset: Int? = nil
 }
 
 enum ScriptEngine {
@@ -58,7 +59,10 @@ enum ScriptEngine {
         var __state = {
             fullText: __input, info: null, error: null,
             postInfo: function(message) { this.info = String(message); },
-            postError: function(message) { this.error = String(message); }
+            postError: function(message, offset) {
+                this.error = String(message);
+                this.errorOffset = typeof offset === 'number' ? (__length ? __location : 0) + offset : null;
+            }
         };
         Object.defineProperty(__state, 'text', {
             get: function() { return __length ? this.fullText.substr(__location, __length) : this.fullText; },
@@ -78,11 +82,14 @@ enum ScriptEngine {
         let error = state.forProperty("error")!
         let info = state.forProperty("info")!
         let errorText = error.isNull || error.isUndefined ? nil : error.toString()
+        let offset = state.forProperty("errorOffset")!
+        let errorOffset = offset.isNumber ? Int(exactly: offset.toDouble()) : nil
         return ScriptResult(
             text: errorText == nil ? state.forProperty("fullText").toString() : request.text,
             selectionLocation: location,
             selectionLength: Int(context.objectForKeyedSubscript("__length").toInt32()),
-            info: info.isNull || info.isUndefined ? nil : info.toString(), error: errorText
+            info: info.isNull || info.isUndefined ? nil : info.toString(), error: errorText,
+            errorOffset: errorOffset
         )
     }
 
