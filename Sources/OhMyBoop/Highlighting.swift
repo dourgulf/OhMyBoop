@@ -10,8 +10,8 @@ enum HighlightLanguage: String, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .automatic: "自动高亮"
-        case .plaintext: "纯文本"
+        case .automatic: L10n.text("自动高亮")
+        case .plaintext: L10n.text("纯文本")
         default: rawValue.uppercased()
         }
     }
@@ -51,12 +51,12 @@ actor HighlightEngine {
 
     func render(_ text: String, language: String?, dark: Bool, enforceLimit: Bool = true, visibleRange: NSRange? = nil) -> HighlightResult {
         let start = Date()
-        guard !Task.isCancelled else { return HighlightResult(status: "已取消") }
-        guard !text.isEmpty else { tree = nil; previous = []; return HighlightResult(status: "等待输入") }
+        guard !Task.isCancelled else { return HighlightResult(status: L10n.text("已取消")) }
+        guard !text.isEmpty else { tree = nil; previous = []; return HighlightResult(status: L10n.text("等待输入")) }
         let limit = language == nil ? Self.automaticLimit : Self.explicitLimit
         guard !enforceLimit || text.utf16.count <= limit else {
             tree = nil; previous = []
-            return HighlightResult(status: language == nil ? "文本较长，请指定语言以启用高亮" : "大文本使用纯文本显示")
+            return HighlightResult(status: language == nil ? L10n.text("文本较长，请指定语言以启用高亮") : L10n.text("大文本使用纯文本显示"))
         }
         let units = Array(text.utf16)
         // Conservative application heuristic; Tree-sitter itself does not detect languages.
@@ -64,7 +64,7 @@ actor HighlightEngine {
         let selected = language ?? ((trimmed.hasPrefix("{") || trimmed.hasPrefix("[")) ? "json" : "")
         guard ["json", "yaml", "javascript"].contains(selected) else {
             tree = nil; previous = []
-            return HighlightResult(status: language == nil ? "请选择语言，当前使用纯文本" : "不支持此语言，已使用纯文本")
+            return HighlightResult(status: language == nil ? L10n.text("请选择语言，当前使用纯文本") : L10n.text("不支持此语言，已使用纯文本"))
         }
         do {
             if currentLanguage != selected || parser == nil {
@@ -77,7 +77,7 @@ actor HighlightEngine {
                 let newQuery = try Query(language: grammar, url: url)
                 parser = newParser; query = newQuery; tree = nil; previous = []; currentLanguage = selected
             }
-            guard let parser, let query else { return HighlightResult(status: "解析器不可用，已使用纯文本") }
+            guard let parser, let query else { return HighlightResult(status: L10n.text("解析器不可用，已使用纯文本")) }
             let incremental = tree != nil && previous != units
             if incremental {
                 var prefix = 0
@@ -101,9 +101,9 @@ actor HighlightEngine {
                 })
             }
             let parseMS = Date().timeIntervalSince(parseStart) * 1000
-            guard let tree else { parser.reset(); previous = []; return HighlightResult(status: "解析超时，已使用纯文本") }
+            guard let tree else { parser.reset(); previous = []; return HighlightResult(status: L10n.text("解析超时，已使用纯文本")) }
             previous = units
-            guard !Task.isCancelled else { return HighlightResult(status: "已取消") }
+            guard !Task.isCancelled else { return HighlightResult(status: L10n.text("已取消")) }
             let fullRange = NSRange(location: 0, length: units.count)
             let paintRange = visibleRange.map { NSIntersectionRange($0, fullRange) } ?? fullRange
             let cursor = query.execute(in: tree)
@@ -118,10 +118,10 @@ actor HighlightEngine {
                 guard clipped.length > 0 else { continue }
                 spans.append(HighlightSpan(range: clipped, color: Self.color(capture.name, dark: dark)))
             }
-            return HighlightResult(spans: spans, background: Self.rgb(dark ? 0x0d1117 : 0xffffff), status: "\(selected.uppercased()) · 语法高亮", milliseconds: Date().timeIntervalSince(start) * 1000, parseMilliseconds: parseMS, incremental: incremental, paintedRange: paintRange)
+            return HighlightResult(spans: spans, background: Self.rgb(dark ? 0x0d1117 : 0xffffff), status: L10n.text("%@ · 语法高亮", selected.uppercased()), milliseconds: Date().timeIntervalSince(start) * 1000, parseMilliseconds: parseMS, incremental: incremental, paintedRange: paintRange)
         } catch {
             tree = nil; previous = []; parser = nil
-            return HighlightResult(status: "语法资源不可用，已使用纯文本")
+            return HighlightResult(status: L10n.text("语法资源不可用，已使用纯文本"))
         }
     }
 
@@ -254,7 +254,7 @@ final class HighlightTextView: NSTextView {
         generation += 1
         let version = generation
         highlightTask?.cancel()
-        guard language != .plaintext else { clearHighlight(); onHighlight?("纯文本"); return }
+        guard language != .plaintext else { clearHighlight(); onHighlight?(L10n.text("纯文本")); return }
         guard !hasMarkedText() else { return }
         let engine = self.engine
         let source = string

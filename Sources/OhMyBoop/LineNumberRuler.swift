@@ -16,7 +16,7 @@ final class LineNumberRuler: NSRulerView {
         clientView = editor
         reservedThicknessForMarkers = 0
         reservedThicknessForAccessoryView = 0
-        setAccessibilityLabel("行号")
+        setAccessibilityLabel(L10n.text("行号"))
         updateLineStarts()
     }
 

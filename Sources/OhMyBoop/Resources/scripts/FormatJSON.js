@@ -16,7 +16,7 @@ function main(state) {
 	}
 	catch(error) {
 		var diagnostic = require('@boop/json-diagnostics').diagnose(state.text);
-		state.postError(diagnostic ? diagnostic.message : String(error), diagnostic ? diagnostic.offset : null);
+		state.postError(diagnostic ? diagnostic.message : String(error), diagnostic ? diagnostic.offset : null, diagnostic ? diagnostic.arguments : []);
 	}
 	
 	

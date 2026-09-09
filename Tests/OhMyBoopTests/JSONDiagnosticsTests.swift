@@ -5,16 +5,16 @@ import AppKit
 final class JSONDiagnosticsTests: XCTestCase {
     func testChineseCommaIsIdentifiedWithoutRejectingStringContent() throws {
         for source in ["{\"a\":1，\"b\":2}", "[1，2]", "{\n  \"😀\": true ，\n  \"b\": null\n}"] {
-            let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: source, selectionLocation: 0, selectionLength: 0))
+            let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: source, selectionLocation: 0, selectionLength: 0, language: "zh-Hans"))
             XCTAssertEqual(result.errorOffset, (source as NSString).range(of: "，").location)
             XCTAssertEqual(result.error, "使用了中文逗号“，”，请改为英文逗号“,”")
             XCTAssertEqual(result.text, source)
         }
-        let valid = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: "{\"描述，备注\":\"你好，世界\"}", selectionLocation: 0, selectionLength: 0))
+        let valid = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: "{\"描述，备注\":\"你好，世界\"}", selectionLocation: 0, selectionLength: 0, language: "zh-Hans"))
         XCTAssertNil(valid.error)
         XCTAssertTrue(valid.text.contains("你好，世界"))
         let otherError = "{\"text\":\"你好，世界\",\"n\" 1}"
-        let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: otherError, selectionLocation: 0, selectionLength: 0))
+        let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: otherError, selectionLocation: 0, selectionLength: 0, language: "zh-Hans"))
         XCTAssertTrue(result.error?.contains("冒号") == true)
         XCTAssertEqual(result.errorOffset, (otherError as NSString).range(of: "1").location)
     }
@@ -49,7 +49,7 @@ final class JSONDiagnosticsTests: XCTestCase {
         ]
         for (source, offset, reason) in samples {
             // A caret away from the start must not shift whole-document diagnostics.
-            let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: source, selectionLocation: min(2, source.utf16.count), selectionLength: 0))
+            let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: source, selectionLocation: min(2, source.utf16.count), selectionLength: 0, language: "zh-Hans"))
             XCTAssertEqual(result.text, source)
             XCTAssertEqual(result.errorOffset, offset, source)
             XCTAssertTrue(result.error?.contains(reason) == true, "\(source): \(result.error ?? "nil")")
@@ -58,7 +58,7 @@ final class JSONDiagnosticsTests: XCTestCase {
 
     func testNativeParserRemainsAuthorityForValidJSON() throws {
         for source in ["null", "42", "true", "\"😀\\u1234\"", "[0,-1.2e+3]", "{\"a\":1,\"a\":2}"] {
-            let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: source, selectionLocation: 0, selectionLength: 0))
+            let result = try ScriptEngine.execute(ScriptRequest(toolID: "FormatJSON", text: source, selectionLocation: 0, selectionLength: 0, language: "zh-Hans"))
             XCTAssertNil(result.error)
             XCTAssertNil(result.errorOffset)
         }
@@ -71,7 +71,7 @@ final class JSONDiagnosticsTests: XCTestCase {
             let editor = try XCTUnwrap(session.scrollView.documentView as? HighlightTextView)
             let ruler = try XCTUnwrap(session.scrollView.verticalRulerView as? LineNumberRuler)
             await session.perform(action, executableURL: executable)
-            XCTAssertTrue(session.message?.hasPrefix("第 2 行，") == true, session.message ?? "")
+            XCTAssertTrue(session.message?.hasPrefix(L10n.text("第 %@ 行，第 %@ 列：%@", "2", "", "").components(separatedBy: L10n.language == "en" ? "," : "，")[0]) == true, session.message ?? "")
             let offset = try XCTUnwrap(editor.errorOffset)
             XCTAssertGreaterThanOrEqual(offset, ruler.lineStarts[1])
             XCTAssertLessThan(offset, ruler.lineStarts[2])
@@ -92,7 +92,7 @@ final class JSONDiagnosticsTests: XCTestCase {
         await session.perform(action, executableURL: executable)
         let offset = (source as NSString).range(of: ",").location
         XCTAssertEqual(editor.errorOffset, offset)
-        XCTAssertTrue(session.message?.contains("第 2 行，第 8 列") == true, session.message ?? "")
+        XCTAssertTrue(session.message == L10n.text("第 %@ 行，第 %@ 列：%@", "2", "8", L10n.text("最后一项后不能有多余的逗号")), session.message ?? "")
         XCTAssertEqual(session.text, source)
         XCTAssertEqual(editor.selectedRange(), selected)
         XCTAssertEqual(undo.canUndo, oldUndo)
@@ -123,7 +123,7 @@ final class JSONDiagnosticsTests: XCTestCase {
                 XCTAssertNotNil(editor.errorOffset)
                 if name == "eof" || name == "empty" {
                     XCTAssertEqual(editor.errorOffset, source.utf16.count)
-                    XCTAssertTrue(session.message?.contains("文本末尾") == true)
+                    XCTAssertTrue(session.message?.hasSuffix(L10n.text("%@（文本末尾）", "")) == true)
                 }
                 try await Task.sleep(for: .milliseconds(400))
                 scroll.layoutSubtreeIfNeeded()

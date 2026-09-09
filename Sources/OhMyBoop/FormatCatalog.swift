@@ -5,6 +5,7 @@ struct ToolAction: Identifiable, Hashable {
     enum Effect: Hashable { case replace, preview(String), information }
     let id: String
     let title: String
+    var localizedTitle: String { L10n.text(title) }
     let home: String
     var group = "其他操作"
     var effect: Effect = .replace
@@ -19,6 +20,7 @@ struct ToolAction: Identifiable, Hashable {
 struct ContentFormat: Identifiable, Hashable {
     let id: String
     let title: String
+    var localizedTitle: String { L10n.text(title) }
     let symbol: String
     let primaryIDs: [String]
     var isOther = false
@@ -37,7 +39,7 @@ struct ActionSearchResult: Identifiable {
     let format: ContentFormat
     let action: ToolAction?
     var id: String { format.id + "/" + (action?.id ?? "") }
-    var title: String { action.map { format.title + " › " + $0.title } ?? format.title }
+    var title: String { action.map { format.localizedTitle + " › " + $0.localizedTitle } ?? format.localizedTitle }
 }
 
 enum FormatCatalog {
@@ -67,17 +69,17 @@ enum FormatCatalog {
     static func format(_ id: String) -> ContentFormat? { formats.first { $0.id == id } }
     static func action(_ id: String) -> ToolAction? { actions.first { $0.id == id } }
     static func home(for id: String) -> String { format(id)?.id ?? action(id)?.home ?? "text" }
-    static func title(_ id: String) -> String { format(id)?.title ?? id }
+    static func title(_ id: String) -> String { format(id)?.localizedTitle ?? id }
     static func search(_ query: String, tools: [Tool]) -> [ActionSearchResult] {
         let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return [] }
         let metadata = Dictionary(uniqueKeysWithValues: tools.map { ($0.id, $0) })
         return formats.flatMap { format in
             var matches: [ActionSearchResult] = []
-            if format.title.localizedCaseInsensitiveContains(query) { matches.append(.init(format: format, action: nil)) }
+            if "\(format.title) \(format.localizedTitle) \(format.id)".localizedCaseInsensitiveContains(query) { matches.append(.init(format: format, action: nil)) }
             matches += format.actions.filter { action in
                 let tool = metadata[action.id]
-                return "\(action.title) \(action.id) \(tool?.name ?? "") \(tool?.tags ?? "") \(tool?.description ?? "")".localizedCaseInsensitiveContains(query)
+                return "\(action.title) \(action.localizedTitle) \(action.id) \(tool?.name ?? "") \(tool?.tags ?? "") \(tool?.description ?? "")".localizedCaseInsensitiveContains(query)
             }.map { .init(format: format, action: $0) }
             return matches
         }

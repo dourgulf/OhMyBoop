@@ -65,15 +65,15 @@ final class HighlightingTests: XCTestCase {
         for text in ["{\"incomplete\":", "{\n\"emoji\": \"👨‍👩‍👧‍👦 e\u{301}\"\n}", "a\r\nb\rc\n", "<>&amp;&#123;\"'", "\t\t leading\n\n", "\u{0}test"] {
             let result = await engine.render(text, language: "json", dark: false)
             // Tree-sitter offsets are UTF-16 ranges over the original input.
-            XCTAssertTrue(!result.spans.isEmpty || result.status.contains("纯文本"), result.status)
+            XCTAssertTrue(!result.spans.isEmpty || result.status.lowercased().contains(L10n.text("纯文本").lowercased()), result.status)
         }
         let invalid = await engine.render("hello", language: "does-not-exist", dark: false)
         XCTAssertTrue(invalid.spans.isEmpty)
-        XCTAssertTrue(invalid.status.contains("不支持"))
+        XCTAssertTrue(invalid.status == L10n.text("不支持此语言，已使用纯文本"))
         let large = await engine.render(String(repeating: "a", count: 100_001), language: "json", dark: false)
         XCTAssertTrue(large.spans.isEmpty)
         let autoLarge = await engine.render(String(repeating: "a", count: 8_001), language: nil, dark: false)
-        XCTAssertTrue(autoLarge.status.contains("指定语言"))
+        XCTAssertTrue(autoLarge.status == L10n.text("文本较长，请指定语言以启用高亮"))
     }
 
     func testIncrementalEditsMatchFreshParseAcrossUnicodeAndLanguageChanges() async {
@@ -168,7 +168,7 @@ final class HighlightingTests: XCTestCase {
         XCTAssertTrue(automatic.status.contains("JSON"))
         let arbitrary = await a.render("ordinary prose: hello", language: nil, dark: false)
         XCTAssertTrue(arbitrary.spans.isEmpty)
-        XCTAssertTrue(arbitrary.status.contains("请选择语言"))
+        XCTAssertTrue(arbitrary.status == L10n.text("请选择语言，当前使用纯文本"))
     }
 
     @MainActor

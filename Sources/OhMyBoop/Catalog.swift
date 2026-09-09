@@ -40,7 +40,7 @@ enum Catalog {
             .map { url in
                 let source = try String(contentsOf: url, encoding: .utf8)
                 guard let start = source.range(of: "/**"), let end = source.range(of: "**/", range: start.upperBound..<source.endIndex) else {
-                    throw EngineError.message("无法读取工具信息：\(url.lastPathComponent)")
+                    throw EngineError.message(L10n.text("无法读取工具信息：%@", url.lastPathComponent))
                 }
                 let metadata = String(source[start.upperBound..<end.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
                 var tool = try JSONDecoder().decode(Tool.self, from: Data(metadata.utf8))

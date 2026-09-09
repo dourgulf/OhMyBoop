@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2DF1EDBDB720337498F347AB /* DraftStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 922D0A771737B6002D86E983 /* DraftStorage.swift */; };
+		3BB3DF2ED22DA20FACA015C4 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFBAE7D707ADF7782A3BC5D5 /* Localization.swift */; };
 		3DDE1713857616B784CAD679 /* SwiftTreeSitter in Frameworks */ = {isa = PBXBuildFile; productRef = C5D208AC9E4CBD3EC9CACF33 /* SwiftTreeSitter */; };
 		48FA9AA5B3EDB91AC22D755E /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21ADA9ABBDF7EA9F9C005492 /* Workspace.swift */; };
 		4FCA4BB9CE07C442BEF9BEE5 /* BoopGrammars in Frameworks */ = {isa = PBXBuildFile; productRef = 90DA791CBC5AD1F1FA8DDC8E /* BoopGrammars */; };
@@ -20,6 +21,7 @@
 		A7318DF3BB353BD5E99F10AC /* EditorPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CAD9A7455AE7855F26E5BD4 /* EditorPreferences.swift */; };
 		AF3B671D85DD223822DC1B3B /* Highlighting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107758A798518553C2841613 /* Highlighting.swift */; };
 		B0EDD2721690FBD67856F49F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72ADCBFF41B69C5A8476F2EC /* Assets.xcassets */; };
+		C11E657671503764B61D8AAF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2AA257FE72039D432786568F /* Localizable.strings */; };
 		C33853BDC0484C9D63CD7913 /* queries in Resources */ = {isa = PBXBuildFile; fileRef = C6593C29CE1B27A3E9343C5E /* queries */; };
 		EB5EBDBBD6CD7C79BBF9C6AF /* OhMyBoopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */; };
 		EE925B2A882745DA89A8D3B7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6E16A8EBC4C0EF1370DFC4 /* ContentView.swift */; };
@@ -32,8 +34,10 @@
 		21ADA9ABBDF7EA9F9C005492 /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		29B712DBD6C5CC9E8755ADA4 /* OhMyBoop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OhMyBoop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OhMyBoopApp.swift; sourceTree = "<group>"; };
+		3E7409714C61B569395B2973 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdPartyNotices.txt; sourceTree = "<group>"; };
 		6264027E78E6E4802BE51236 /* EditorSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorSettingsView.swift; sourceTree = "<group>"; };
+		6BEB542077EB8D723713F830 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		6CAD9A7455AE7855F26E5BD4 /* EditorPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPreferences.swift; sourceTree = "<group>"; };
 		72ADCBFF41B69C5A8476F2EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		77DCAB58073F4768C1AF1CE1 /* BoopGrammars */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BoopGrammars; path = Vendor/BoopGrammars; sourceTree = SOURCE_ROOT; };
@@ -44,6 +48,7 @@
 		C6593C29CE1B27A3E9343C5E /* queries */ = {isa = PBXFileReference; lastKnownFileType = folder; name = queries; path = Sources/OhMyBoop/Resources/queries; sourceTree = SOURCE_ROOT; };
 		DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEngine.swift; sourceTree = "<group>"; };
 		E32117CAD3AA3255A6E7CE94 /* LineNumberRuler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineNumberRuler.swift; sourceTree = "<group>"; };
+		FFBAE7D707ADF7782A3BC5D5 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +75,7 @@
 				865C6714C5495268D9E22D26 /* FormatCatalog.swift */,
 				107758A798518553C2841613 /* Highlighting.swift */,
 				E32117CAD3AA3255A6E7CE94 /* LineNumberRuler.swift */,
+				FFBAE7D707ADF7782A3BC5D5 /* Localization.swift */,
 				3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */,
 				DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */,
 				21ADA9ABBDF7EA9F9C005492 /* Workspace.swift */,
@@ -98,6 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */,
+				2AA257FE72039D432786568F /* Localizable.strings */,
 			);
 			name = Resources;
 			path = Sources/OhMyBoop/Resources;
@@ -168,6 +175,7 @@
 			knownRegions = (
 				Base,
 				en,
+				"zh-Hans",
 			);
 			mainGroup = 76D7664A45FA5165219059D2;
 			minimizedProjectReferenceProxies = 1;
@@ -191,6 +199,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B0EDD2721690FBD67856F49F /* Assets.xcassets in Resources */,
+				C11E657671503764B61D8AAF /* Localizable.strings in Resources */,
 				F2A2B2395BC3F0E340CDE2E0 /* ThirdPartyNotices.txt in Resources */,
 				C33853BDC0484C9D63CD7913 /* queries in Resources */,
 				750B9DC578FC226B659723EA /* scripts in Resources */,
@@ -212,6 +221,7 @@
 				914D7852AAE57A6AE6D08243 /* FormatCatalog.swift in Sources */,
 				AF3B671D85DD223822DC1B3B /* Highlighting.swift in Sources */,
 				A1984FA28360E365F3D3B6C7 /* LineNumberRuler.swift in Sources */,
+				3BB3DF2ED22DA20FACA015C4 /* Localization.swift in Sources */,
 				EB5EBDBBD6CD7C79BBF9C6AF /* OhMyBoopApp.swift in Sources */,
 				A1837BFE92F4826EB70CC422 /* ScriptEngine.swift in Sources */,
 				48FA9AA5B3EDB91AC22D755E /* Workspace.swift in Sources */,
@@ -219,6 +229,18 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		2AA257FE72039D432786568F /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6BEB542077EB8D723713F830 /* en */,
+				3E7409714C61B569395B2973 /* zh-Hans */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		AB679A6DC7EB2890F61C2316 /* Release */ = {

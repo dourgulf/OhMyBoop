@@ -62,13 +62,13 @@ final class EditorPreferencesTests: XCTestCase {
         let preferences = EditorPreferences(defaults: defaults)
         preferences.fontSize = 32
         let hosting = NSHostingView(rootView: EditorSettingsView(preferences: preferences))
-        hosting.frame = NSRect(x: 0, y: 0, width: 520, height: 480)
+        hosting.frame = NSRect(x: 0, y: 0, width: 560, height: 610)
         let window = NSWindow(contentRect: hosting.frame, styleMask: [.titled], backing: .buffered, defer: false)
         window.contentView = hosting
         defer { window.orderOut(nil) }
         hosting.layoutSubtreeIfNeeded()
         let bitmap = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
         hosting.cacheDisplay(in: hosting.bounds, to: bitmap)
-        try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: URL(fileURLWithPath: "/tmp/ohmyboop-editor-settings.png"))
+        try XCTUnwrap(bitmap.representation(using: .png, properties: [:])).write(to: URL(fileURLWithPath: "/tmp/ohmyboop-editor-settings-\(L10n.language).png"))
     }
 }

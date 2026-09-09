@@ -44,7 +44,7 @@ final class ScriptEngineTests: XCTestCase {
 
     func testInformationalToolsDoNotReplaceInput() throws {
         let result = try run("CountWords", "one two three")
-        XCTAssertEqual(result.info, "3 words")
+        XCTAssertEqual(result.info, L10n.text("词数：%@", "3"))
         XCTAssertEqual(result.text, "one two three")
     }
 
@@ -86,7 +86,7 @@ final class ScriptEngineTests: XCTestCase {
             _ = try await ScriptEngine.run(ScriptRequest(toolID: "EvalJavascript", text: "while(true) {}", selectionLocation: 0, selectionLength: 0), timeout: 1, executableURL: executable)
             XCTFail("An infinite script must time out")
         } catch {
-            XCTAssertTrue(error.localizedDescription.contains("已停止"), error.localizedDescription)
+            XCTAssertTrue(error.localizedDescription == L10n.text("执行超过 %@ 秒，已停止。原文已保留。", "1"), error.localizedDescription)
         }
     }
 }

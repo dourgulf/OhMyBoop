@@ -63,7 +63,7 @@ struct DraftStorage {
     func load() throws -> WorkspaceSnapshot {
         guard let sourceURL else { return WorkspaceSnapshot() }
         let snapshot = try JSONDecoder().decode(WorkspaceSnapshot.self, from: Data(contentsOf: sourceURL))
-        guard [1, 2].contains(snapshot.version) else { throw EngineError.message("无法读取此版本的草稿文件。") }
+        guard [1, 2].contains(snapshot.version) else { throw EngineError.message(L10n.text("无法读取此版本的草稿文件。")) }
         return snapshot
     }
     // Must succeed before the first v2 write. The original file is never overwritten by the backup.

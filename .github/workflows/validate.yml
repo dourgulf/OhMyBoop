@@ -13,13 +13,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Test scripts, persistence and native highlighting
-        run: swift test --disable-swift-testing
+        run: |
+          OHMYBOOP_LANGUAGE=en swift test --disable-swift-testing
+          OHMYBOOP_LANGUAGE=zh-Hans swift test --disable-swift-testing --skip-build
       - name: Build and verify signed app
         run: zsh scripts/build-app.sh
       - name: Check packaged highlighter resources
         run: |
           dist/OhMyBoop.app/Contents/MacOS/OhMyBoop --validate-highlighter /tmp/highlighter-resources.json
           cat /tmp/highlighter-resources.json
+          python3 scripts/validate-localization.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -12,6 +12,7 @@ struct ScriptRequest: Codable, Sendable {
     let text: String
     let selectionLocation: Int
     let selectionLength: Int
+    var language: String? = nil
 }
 
 struct ScriptResult: Codable, Sendable {
@@ -26,8 +27,9 @@ struct ScriptResult: Codable, Sendable {
 enum ScriptEngine {
     // Each invocation owns a fresh VM. Only bundled modules are exposed; no native I/O bridge.
     static func execute(_ request: ScriptRequest) throws -> ScriptResult {
+        let language = L10n.resolveLanguage(request.language, preferred: [L10n.language])
         guard try Catalog.load().contains(where: { $0.id == request.toolID }), let context = JSContext() else {
-            throw EngineError.message("找不到功能：\(request.toolID)")
+            throw EngineError.message(L10n.text("找不到功能：%@", request.toolID))
         }
         var exception: String?
         context.exceptionHandler = { _, value in exception = value?.toString() ?? "JavaScript error" }
@@ -59,8 +61,9 @@ enum ScriptEngine {
         var __state = {
             fullText: __input, info: null, error: null,
             postInfo: function(message) { this.info = String(message); },
-            postError: function(message, offset) {
+            postError: function(message, offset, arguments) {
                 this.error = String(message);
+                this.errorArguments = arguments || [];
                 this.errorOffset = typeof offset === 'number' ? (__length ? __location : 0) + offset : null;
             }
         };
@@ -82,13 +85,15 @@ enum ScriptEngine {
         let error = state.forProperty("error")!
         let info = state.forProperty("info")!
         let errorText = error.isNull || error.isUndefined ? nil : error.toString()
+        let errorArguments = state.forProperty("errorArguments")?.toArray() as? [String] ?? []
         let offset = state.forProperty("errorOffset")!
         let errorOffset = offset.isNumber ? Int(exactly: offset.toDouble()) : nil
         return ScriptResult(
             text: errorText == nil ? state.forProperty("fullText").toString() : request.text,
             selectionLocation: location,
             selectionLength: Int(context.objectForKeyedSubscript("__length").toInt32()),
-            info: info.isNull || info.isUndefined ? nil : info.toString(), error: errorText,
+            info: info.isNull || info.isUndefined ? nil : L10n.scriptMessage(info.toString(), language: language),
+            error: errorText.map { L10n.scriptMessage($0, arguments: errorArguments, language: language) },
             errorOffset: errorOffset
         )
     }
@@ -96,7 +101,10 @@ enum ScriptEngine {
     // A subprocess keeps large transformations and Eval Javascript off the UI thread,
     // and allows an infinite script to be stopped without destroying the editor.
     static func run(_ request: ScriptRequest, timeout: TimeInterval = 8, executableURL: URL? = Bundle.main.executableURL) async throws -> ScriptResult {
-        try await Task.detached(priority: .userInitiated) {
+        var localizedRequest = request
+        localizedRequest.language = request.language ?? L10n.language
+        let request = localizedRequest
+        return try await Task.detached(priority: .userInitiated) {
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: folder) }
@@ -114,10 +122,11 @@ enum ScriptEngine {
             if process.isRunning {
                 kill(process.processIdentifier, SIGKILL)
                 process.waitUntilExit()
-                throw EngineError.message("执行超过 \(Int(timeout)) 秒，已停止。原文已保留。")
+                throw EngineError.message(L10n.text("执行超过 %@ 秒，已停止。原文已保留。", String(Int(timeout))))
             }
-            process.waitUntilExit()
-            guard process.terminationStatus == 0 else { throw EngineError.message("执行进程异常退出，原文已保留。") }
+            // isRunning is already false. A second synchronous wait can block a
+            // Swift concurrency worker despite the child having exited.
+            guard process.terminationStatus == 0 else { throw EngineError.message(L10n.text("执行进程异常退出，原文已保留。")) }
             return try JSONDecoder().decode(ScriptResult.self, from: Data(contentsOf: output))
         }.value
     }
