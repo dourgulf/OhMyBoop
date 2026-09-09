@@ -14,7 +14,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
     var message: String?
     var isError = false
     var isRunning = false
-    var highlightStatus = "等待输入"
+    var highlightStatus = L10n.text("等待输入")
     var highlightLanguage: HighlightLanguage {
         didSet {
             initialDraft.highlightLanguage = highlightLanguage.rawValue
@@ -87,7 +87,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         editor.minSize = NSSize(width: 0, height: 0)
         editor.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         editor.string = text
-        editor.setAccessibilityLabel("\(id) 文本编辑器")
+        editor.setAccessibilityLabel(L10n.text("%@ 文本编辑器", id))
         editor.delegate = self
         let count = (text as NSString).length
         let start = min(max(0, initialDraft.selectionLocation), count)
@@ -198,7 +198,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         format?.actions.first { $0.id == lastActionID } ?? format?.primaryActions.first
     }
     func scope(for action: ToolAction?) -> String {
-        action?.wholeDocument == true || selectionLength == 0 ? "处理全文" : "处理选区 · \(selectionLength) 字符"
+        action?.wholeDocument == true || selectionLength == 0 ? L10n.text("处理全文") : L10n.text("处理选区 · %@ 字符", String(selectionLength))
     }
     func closePreview() { preview = nil; previewTitle = nil }
 
@@ -215,7 +215,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         highlightLanguage = draft.highlightLanguage.flatMap(HighlightLanguage.init(rawValue:)) ?? format?.language ?? .plaintext
         lastActionID = draft.lastActionID
         initialDraft = draft
-        message = "已恢复历史草稿"
+        message = L10n.text("已恢复历史草稿")
         isError = false
         restoreScroll()
         onChange?()
@@ -244,7 +244,7 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         do {
             let result = try await ScriptEngine.run(ScriptRequest(toolID: action.id, text: draft.text, selectionLocation: location, selectionLength: length), executableURL: executableURL)
             guard text == draft.text else {
-                message = "内容已变化，本次结果未应用。"; return
+                message = L10n.text("内容已变化，本次结果未应用。"); return
             }
             guard result.error == nil else {
                 isError = true
@@ -258,8 +258,8 @@ final class EditorSession: NSObject, NSTextViewDelegate {
                             line += 1; column = 1
                         } else { column += 1 }
                     }
-                    message = "第 \(line) 行，第 \(column) 列：\(result.error!)"
-                    if offset == (draft.text as NSString).length { message! += "（文本末尾）" }
+                    message = L10n.text("第 %@ 行，第 %@ 列：%@", String(line), String(column), result.error!)
+                    if offset == (draft.text as NSString).length { message = L10n.text("%@（文本末尾）", message!) }
                     (scrollView.documentView as? HighlightTextView)?.showError(at: offset)
                 }
                 return
@@ -274,15 +274,15 @@ final class EditorSession: NSObject, NSTextViewDelegate {
                 if length > 0 {
                     let range = NSRange(location: result.selectionLocation, length: result.selectionLength)
                     guard range.location >= 0, range.length >= 0, NSMaxRange(range) <= (result.text as NSString).length else {
-                        throw EngineError.message("输出选区无效，原文已保留。")
+                        throw EngineError.message(L10n.text("输出选区无效，原文已保留。"))
                     }
                     output = (result.text as NSString).substring(with: range)
                 } else { output = result.text }
                 preview = EditorSession(id: "result-" + UUID().uuidString, draft: Draft(text: output), defaultLanguage: FormatCatalog.format(outputFormat)?.language ?? .plaintext, isReadOnly: true, preferences: preferences)
-                previewTitle = "\(action.title) · \(FormatCatalog.title(outputFormat))"
+                previewTitle = "\(action.localizedTitle) · \(FormatCatalog.title(outputFormat))"
             case .information: break
             }
-            message = result.info ?? (action.outputFormat == nil ? "\(action.title)完成" : "结果已显示，原文保留")
+            message = result.info ?? (action.outputFormat == nil ? L10n.text("%@完成", action.localizedTitle) : L10n.text("结果已显示，原文保留"))
         } catch {
             isError = true
             message = error.localizedDescription
@@ -320,12 +320,12 @@ final class Workspace {
                     try storage.save(snapshot)
                 } catch {
                     canSave = false
-                    storageMessage = "迁移备份或保存失败：\(error.localizedDescription) 已恢复旧草稿供查看，本次不覆盖文件。"
+                    storageMessage = L10n.text("迁移备份或保存失败：%@ 已恢复旧草稿供查看，本次不覆盖文件。", error.localizedDescription)
                 }
             }
         } catch {
             selectedID = "json"
-            storageMessage = "读取失败：\(error.localizedDescription) 原文件已保留，本次不覆盖草稿。"
+            storageMessage = L10n.text("读取失败：%@ 原文件已保留，本次不覆盖草稿。", error.localizedDescription)
             canSave = false
         }
     }
@@ -367,6 +367,6 @@ final class Workspace {
         do {
             try storage.save(WorkspaceSnapshot(selectedID: selectedID, favorites: favorites, drafts: drafts, archivedDrafts: archivedDrafts))
             storageMessage = nil
-        } catch { storageMessage = "草稿保存失败：\(error.localizedDescription)" }
+        } catch { storageMessage = L10n.text("草稿保存失败：%@", error.localizedDescription) }
     }
 }

@@ -14,28 +14,28 @@ struct ContentView: View {
                     Image(systemName: "terminal.fill").font(.title2).foregroundStyle(.mint)
                     VStack(alignment: .leading, spacing: 3) {
                         Text("OhMyBoop").font(.headline)
-                        Text("你的开发工具箱").font(.caption).foregroundStyle(.secondary)
+                        Text(L10n.text("你的开发工具箱")).font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                 }.padding(20)
                 HStack {
                     Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    TextField("搜索格式或动作…", text: $search).textFieldStyle(.plain)
+                    TextField(L10n.text("搜索格式或动作…"), text: $search).textFieldStyle(.plain)
                     if !search.isEmpty {
                         Button { search = "" } label: { Image(systemName: "xmark.circle.fill") }
-                            .buttonStyle(.plain).help("清除搜索")
+                            .buttonStyle(.plain).help(L10n.text("清除搜索"))
                     }
                 }.padding(9).background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 8)).padding(.horizontal, 14)
                 if search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     List(selection: $workspace.selectedID) {
-                        Section("格式与文本") {
+                        Section(L10n.text("格式与文本")) {
                             ForEach(FormatCatalog.formats.filter { !$0.isOther }) { format in
-                                Label(format.title, systemImage: format.symbol).padding(.vertical, 4).tag(format.id)
+                                Label(format.localizedTitle, systemImage: format.symbol).padding(.vertical, 4).tag(format.id)
                             }
                         }
-                        DisclosureGroup("其他数据类型", isExpanded: $otherExpanded) {
+                        DisclosureGroup(L10n.text("其他数据类型"), isExpanded: $otherExpanded) {
                             ForEach(FormatCatalog.formats.filter(\.isOther)) { format in
-                                Label(format.title, systemImage: format.symbol).padding(.vertical, 4).tag(format.id)
+                                Label(format.localizedTitle, systemImage: format.symbol).padding(.vertical, 4).tag(format.id)
                             }
                         }
                     }.listStyle(.sidebar)
@@ -43,7 +43,7 @@ struct ContentView: View {
                     FormatSearchResults(query: search, workspace: workspace)
                 }
                 Divider()
-                Text("\(workspace.tools.count) 个动作 · 本地处理")
+                Text(L10n.text("%@ 个动作 · 本地处理", String(workspace.tools.count)))
                     .font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading).padding(14)
             }.frame(minWidth: 210, idealWidth: 240, maxWidth: 280).background(.background.secondary)
             VStack(spacing: 0) {
@@ -51,7 +51,7 @@ struct ContentView: View {
                     FormatWorkspaceView(format: format, session: workspace.session(for: format.id), workspace: workspace)
                         .id(format.id)
                 } else {
-                    ContentUnavailableView("选择一种格式", systemImage: "sidebar.left", description: Text("同一格式的动作共用草稿。"))
+                    ContentUnavailableView(L10n.text("选择一种格式"), systemImage: "sidebar.left", description: Text(L10n.text("同一格式的动作共用草稿。")))
                 }
                 if let message = workspace.storageMessage {
                     Text(message).font(.caption).foregroundStyle(.red).padding(12)
@@ -72,13 +72,13 @@ private struct FormatSearchResults: View {
     var body: some View {
         let matches = FormatCatalog.search(query, tools: workspace.tools)
         if matches.isEmpty {
-            ContentUnavailableView("没有匹配的格式或动作", systemImage: "magnifyingglass", description: Text("试试 JSON、格式化或去反斜杠。"))
+            ContentUnavailableView(L10n.text("没有匹配的格式或动作"), systemImage: "magnifyingglass", description: Text(L10n.text("试试 JSON、格式化或去反斜杠。")))
         } else {
             List(matches) { match in
                 Button { workspace.reveal(match) } label: {
                     Label(match.title, systemImage: match.format.symbol)
                         .frame(maxWidth: .infinity, alignment: .leading).padding(.vertical, 4)
-                }.buttonStyle(.plain).help("定位到工作区，不自动执行")
+                }.buttonStyle(.plain).help(L10n.text("定位到工作区，不自动执行"))
             }.listStyle(.sidebar)
         }
     }
@@ -96,12 +96,12 @@ private struct FormatWorkspaceView: View {
                 Image(systemName: format.symbol).font(.system(size: 24)).foregroundStyle(.mint)
                     .frame(width: 48, height: 48).background(.mint.opacity(0.1), in: .rect(cornerRadius: 12))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(format.title).font(.title2.weight(.semibold))
-                    Text("一份草稿，连续处理").font(.callout).foregroundStyle(.secondary)
+                    Text(format.localizedTitle).font(.title2.weight(.semibold))
+                    Text(L10n.text("一份草稿，连续处理")).font(.callout).foregroundStyle(.secondary)
                 }
                 Spacer()
                 if !(workspace.archivedDrafts[format.id] ?? []).isEmpty {
-                    Button("历史草稿", systemImage: "clock.arrow.circlepath") { showingHistory = true }
+                    Button(L10n.text("历史草稿"), systemImage: "clock.arrow.circlepath") { showingHistory = true }
                         .disabled(session.isRunning)
                 }
             }.padding(24)
@@ -110,11 +110,11 @@ private struct FormatWorkspaceView: View {
                 .padding(.horizontal, 20).padding(.vertical, 10)
             if let action = format.actions.first(where: { $0.id == workspace.revealedActionID }) {
                 HStack {
-                    Text("已定位：\(action.title)").font(.caption)
+                    Text(L10n.text("已定位：%@", action.localizedTitle)).font(.caption)
                     Text(session.scope(for: action)).font(.caption).foregroundStyle(.secondary)
                     Spacer()
                     ActionButton(action: action, session: session)
-                    Button("收起") { workspace.revealedActionID = nil }.buttonStyle(.borderless)
+                    Button(L10n.text("收起")) { workspace.revealedActionID = nil }.buttonStyle(.borderless)
                 }.padding(.horizontal, 24).padding(.bottom, 10)
             }
             Divider()
@@ -124,13 +124,13 @@ private struct FormatWorkspaceView: View {
                 PersistentEditor(session: session)
                     .overlay(alignment: .topLeading) {
                         if session.text.isEmpty {
-                            Text("在这里输入或粘贴文本…\n\n此格式的动作共用这份草稿。")
+                            Text(L10n.text("在这里输入或粘贴文本…\n\n此格式的动作共用这份草稿。"))
                                 .font(.system(size: 14, design: .monospaced)).foregroundStyle(.tertiary)
-                                .padding(.leading, 29).padding(.top, 24).allowsHitTesting(false)
+                                .padding(.leading, 73).padding(.top, 24).allowsHitTesting(false)
                         }
                     }.frame(minHeight: 160, maxHeight: .infinity)
                 if let preview = session.preview {
-                    ConversionPreview(session: preview, title: session.previewTitle ?? "结果", close: session.closePreview)
+                    ConversionPreview(session: preview, title: session.previewTitle ?? L10n.text("结果"), close: session.closePreview)
                         .id(preview.id)
                         .frame(minHeight: 130, idealHeight: 200, maxHeight: 300)
                 }
@@ -145,9 +145,9 @@ private struct ActionButton: View {
     let action: ToolAction
     let session: EditorSession
     var body: some View {
-        Button(action.title) { session.run(action) }
+        Button(action.localizedTitle) { session.run(action) }
             .disabled(session.isRunning)
-            .help(action.title + " · " + session.scope(for: action))
+            .help(action.localizedTitle + " · " + session.scope(for: action))
             .accessibilityIdentifier("action-" + action.id)
     }
 }
@@ -170,7 +170,7 @@ private struct ActionToolbar: View {
                 ActionButton(action: action, session: session)
             }
             if !conversions.isEmpty {
-                Menu("转换为") {
+                Menu(L10n.text("转换为")) {
                     ForEach(conversions) { action in ActionButton(action: action, session: session) }
                 }.fixedSize()
             }
@@ -188,22 +188,22 @@ private struct MoreActionsMenu: View {
         let remaining = format.actions.filter { !excluded.contains($0.id) }
         let groups = Array(Set(remaining.map(\.group))).sorted()
         let favorites = format.actions.filter { workspace.favorites.contains($0.id) }
-        Menu("更多") {
+        Menu(L10n.text("更多")) {
             if !favorites.isEmpty {
-                Section("已收藏动作") {
+                Section(L10n.text("已收藏动作")) {
                     ForEach(favorites) { action in ActionButton(action: action, session: session) }
                 }
             }
             ForEach(groups, id: \.self) { group in
-                Section(group) {
+                Section(L10n.text(group)) {
                     ForEach(remaining.filter { $0.group == group }) { action in
                         ActionButton(action: action, session: session)
                     }
                 }
             }
-            Menu("管理收藏") {
+            Menu(L10n.text("管理收藏")) {
                 ForEach(format.actions) { action in
-                    Toggle(action.title, isOn: Binding(get: { workspace.favorites.contains(action.id) }, set: { value in
+                    Toggle(action.localizedTitle, isOn: Binding(get: { workspace.favorites.contains(action.id) }, set: { value in
                         if workspace.favorites.contains(action.id) != value { workspace.toggleFavorite(action.id) }
                     }))
                 }
@@ -216,18 +216,18 @@ private struct EditorControls: View {
     @Bindable var session: EditorSession
     var body: some View {
         HStack(spacing: 12) {
-            Picker("高亮", selection: $session.highlightLanguage) {
+            Picker(L10n.text("高亮"), selection: $session.highlightLanguage) {
                 ForEach(HighlightLanguage.allCases) { language in Text(language.title).tag(language) }
-            }.labelsHidden().frame(width: 110).accessibilityLabel("高亮语言").help(session.highlightStatus)
+            }.labelsHidden().frame(width: 110).accessibilityLabel(L10n.text("高亮语言")).help(session.highlightStatus)
             Text(session.scope(for: session.lastAction)).font(.caption).foregroundStyle(.secondary)
             Spacer(minLength: 0)
             Button {
                 if let value = NSPasteboard.general.string(forType: .string) { session.replaceText(value) }
             } label: { Image(systemName: "document.on.clipboard") }
-                .help("粘贴并替换全文（可撤销）").disabled(session.isRunning)
-            Button { copyText(session.text) } label: { Image(systemName: "doc.on.doc") }.help("复制全文")
+                .help(L10n.text("粘贴并替换全文（可撤销）")).disabled(session.isRunning)
+            Button { copyText(session.text) } label: { Image(systemName: "doc.on.doc") }.help(L10n.text("复制全文"))
             Button { session.replaceText("") } label: { Image(systemName: "trash") }
-                .help("清空当前格式草稿（可撤销）").disabled(session.isRunning || session.text.isEmpty)
+                .help(L10n.text("清空当前格式草稿（可撤销）")).disabled(session.isRunning || session.text.isEmpty)
         }.buttonStyle(.borderless).padding(.horizontal, 24).padding(.vertical, 10)
     }
 }
@@ -240,10 +240,10 @@ private struct ConversionPreview: View {
         VStack(spacing: 0) {
             HStack {
                 Text(title).font(.subheadline.weight(.medium)).lineLimit(1)
-                Text("原文保留").font(.caption).foregroundStyle(.secondary)
+                Text(L10n.text("原文保留")).font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Button("复制结果") { copyText(session.text) }
-                Button("关闭", systemImage: "xmark") { close() }.labelStyle(.iconOnly)
+                Button(L10n.text("复制结果")) { copyText(session.text) }
+                Button(L10n.text("关闭"), systemImage: "xmark") { close() }.labelStyle(.iconOnly)
             }.padding(.horizontal, 20).padding(.vertical, 8)
             Divider()
             PersistentEditor(session: session)
@@ -257,17 +257,17 @@ private struct EditorStatus: View {
         HStack(spacing: 12) {
             if session.isRunning {
                 ProgressView().controlSize(.small)
-                Text("正在处理…").font(.caption)
+                Text(L10n.text("正在处理…")).font(.caption)
             } else if let message = session.message {
                 Image(systemName: session.isError ? "exclamationmark.circle" : "checkmark.circle")
                     .foregroundStyle(session.isError ? .red : .mint)
                 Text(message).font(.caption).textSelection(.enabled).lineLimit(2)
             } else {
-                Text("\(session.characterCount) 字符 · \(session.lineCount) 行 · \(session.highlightStatus)").font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                Text(L10n.text("%@ 字符 · %@ 行 · %@", String(session.characterCount), String(session.lineCount), session.highlightStatus)).font(.caption).foregroundStyle(.secondary).lineLimit(2)
             }
             Spacer(minLength: 0)
             if let action = session.lastAction {
-                Text("⌘↩ \(action.title)").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text("⌘↩ \(action.localizedTitle)").font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
         }.padding(.horizontal, 24).padding(.vertical, 12)
     }
@@ -279,21 +279,21 @@ private struct DraftHistoryView: View {
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("\(format.title) · 历史草稿").font(.title2)
-            Text("恢复前会保留当前草稿，原归档也会保留。").font(.callout).foregroundStyle(.secondary)
+            Text(L10n.text("%@ · 历史草稿", format.localizedTitle)).font(.title2)
+            Text(L10n.text("恢复前会保留当前草稿，原归档也会保留。")).font(.callout).foregroundStyle(.secondary)
             List(workspace.archivedDrafts[format.id] ?? []) { archive in
                 HStack {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text(FormatCatalog.action(archive.sourceID)?.title ?? archive.sourceID).font(.headline)
-                        Text(archive.sourceID).font(.caption).foregroundStyle(.secondary)
-                        Text(archive.draft.text.isEmpty ? "空草稿" : String(archive.draft.text.prefix(150))).font(.caption).lineLimit(3)
+                        Text(FormatCatalog.action(archive.sourceID)?.localizedTitle ?? L10n.text(archive.sourceID)).font(.headline)
+                        Text(archive.sourceID == "恢复前草稿" ? L10n.text("恢复前草稿") : archive.sourceID).font(.caption).foregroundStyle(.secondary)
+                        Text(archive.draft.text.isEmpty ? L10n.text("空草稿") : String(archive.draft.text.prefix(150))).font(.caption).lineLimit(3)
                     }
                     Spacer()
-                    Button("恢复") { workspace.restoreArchive(archive, in: format.id); dismiss() }
+                    Button(L10n.text("恢复")) { workspace.restoreArchive(archive, in: format.id); dismiss() }
                         .disabled(workspace.session(for: format.id).isRunning)
                 }.padding(.vertical, 5)
             }
-            HStack { Spacer(); Button("关闭") { dismiss() }.keyboardShortcut(.cancelAction) }
+            HStack { Spacer(); Button(L10n.text("关闭")) { dismiss() }.keyboardShortcut(.cancelAction) }
         }.padding(24).frame(minWidth: 520, idealWidth: 640, minHeight: 400, idealHeight: 500)
     }
 }

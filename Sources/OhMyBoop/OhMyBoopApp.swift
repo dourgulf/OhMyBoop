@@ -57,6 +57,7 @@ struct OhMyBoopApp: App {
     var body: some Scene {
         Window("OhMyBoop", id: "main") {
             ContentView(workspace: workspace)
+                .environment(\.locale, L10n.locale)
                 .onAppear { delegate.workspace = workspace }
                 .onDisappear { workspace.save() }
                 .tint(Color(red: 0.12, green: 0.55, blue: 0.45))
@@ -65,11 +66,11 @@ struct OhMyBoopApp: App {
         .windowStyle(.titleBar)
         .commands {
             CommandGroup(replacing: .newItem) {}
-            CommandMenu("处理") {
+            CommandMenu(L10n.text("处理")) {
                 if let id = workspace.selectedID {
                     let session = workspace.session(for: id)
                     if let action = session.lastAction {
-                        Button(action.title) { session.run(action) }
+                        Button(action.localizedTitle) { session.run(action) }
                             .keyboardShortcut(.return, modifiers: .command)
                             .disabled(session.isRunning)
                     }
@@ -78,6 +79,7 @@ struct OhMyBoopApp: App {
         }
         Settings {
             EditorSettingsView(preferences: .shared)
+                .environment(\.locale, L10n.locale)
         }
     }
 }

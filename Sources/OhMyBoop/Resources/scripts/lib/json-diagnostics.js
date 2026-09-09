@@ -2,7 +2,7 @@
 // Offsets are JavaScript string offsets (UTF-16), matching NSTextView ranges.
 exports.diagnose = function (text) {
   var i = 0;
-  function fail(message, offset) { throw { message: message, offset: offset == null ? i : offset }; }
+  function fail(message, offset, args) { throw { message: message, offset: offset == null ? i : offset, arguments: args || [] }; }
   function space() { while (/[\x20\t\r\n]/.test(text.charAt(i)) && i < text.length) i++; }
   function string() {
     i++;
@@ -68,13 +68,13 @@ exports.diagnose = function (text) {
         var valueEnd = i;
         space();
         if (text.charAt(i) === end) { i++; return; }
-        if (i === text.length) fail("缺少结束符 " + end);
+        if (i === text.length) fail("缺少结束符 %@", null, [end]);
         if (text.charAt(i) === '，') fail("使用了中文逗号“，”，请改为英文逗号“,”");
         if (text.charAt(i) !== ',') {
           var next = text.charAt(i);
           var startsNextItem = object ? next === '"' || next === "'" : /[\[\{"'0-9tfn-]/.test(next);
           if (startsNextItem) fail("此处缺少逗号 ,（上一项之后）", valueEnd);
-          fail("此处需要逗号 , 或结束符 " + end);
+          fail("此处需要逗号 , 或结束符 %@", null, [end]);
         }
         var commaOffset = i;
         i++; space();
@@ -84,7 +84,7 @@ exports.diagnose = function (text) {
     var literal = c === 't' ? 'true' : c === 'f' ? 'false' : c === 'n' ? 'null' : null;
     if (literal) {
       for (var j = 0; j < literal.length; j++, i++) {
-        if (text.charAt(i) !== literal.charAt(j)) fail("此处应为 " + literal);
+        if (text.charAt(i) !== literal.charAt(j)) fail("此处应为 %@", null, [literal]);
       }
       return;
     }

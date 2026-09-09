@@ -26,6 +26,9 @@ targets:
         buildPhase: resources
       - path: Resources/Assets.xcassets
         buildPhase: resources
+      - path: Sources/OhMyBoop/Resources
+        excludes: [scripts, queries, ThirdPartyNotices.txt]
+        buildPhase: resources
     dependencies:
       - package: SwiftTreeSitter
         product: SwiftTreeSitter
