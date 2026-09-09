@@ -11,12 +11,12 @@
 
 function main(state) {
 	try {
-		// I feel like this should have a real parser/formatter
-		// but hey, it works so who am I to judge?
+		// Keep native JSON parsing as the authority; diagnose only on failure.
 		state.text = JSON.stringify(JSON.parse(state.text), null, 2);
 	}
 	catch(error) {
-		state.postError("Invalid JSON")
+		var diagnostic = require('@boop/json-diagnostics').diagnose(state.text);
+		state.postError(diagnostic ? diagnostic.message : String(error), diagnostic ? diagnostic.offset : null);
 	}
 	
 	

@@ -76,5 +76,8 @@ struct OhMyBoopApp: App {
                 }
             }
         }
+        Settings {
+            EditorSettingsView(preferences: .shared)
+        }
     }
 }

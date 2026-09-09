@@ -138,8 +138,10 @@ actor HighlightEngine {
     private static func color(_ name: String, dark: Bool) -> NSColor {
         let value: Int
         if name.contains("comment") { value = dark ? 0x8b949e : 0x6a737d }
-        else if name.contains("key") || name.contains("property") || name.contains("number") || name.contains("constant") || name.contains("boolean") { value = dark ? 0x79c0ff : 0x005cc5 }
-        else if name.hasPrefix("string") { value = dark ? 0xa5d6ff : 0x032f62 }
+        else if name.contains("key") || name.contains("property") { value = dark ? 0x79c0ff : 0x005cc5 }
+        else if name.contains("number") { value = dark ? 0xffab70 : 0x9a4600 }
+        else if name.contains("constant") || name.contains("boolean") { value = dark ? 0xd2a8ff : 0x6f42c1 }
+        else if name.hasPrefix("string") { value = dark ? 0x7ee787 : 0x116329 }
         else if name.hasPrefix("keyword") || name.hasPrefix("operator") { value = dark ? 0xff7b72 : 0xd73a49 }
         else if name.hasPrefix("function") { value = dark ? 0xd2a8ff : 0x6f42c1 }
         else { value = dark ? 0xc9d1d9 : 0x24292e }
@@ -149,6 +151,11 @@ actor HighlightEngine {
 
 @MainActor
 final class HighlightTextView: NSTextView {
+    override func insertTab(_ sender: Any?) {
+        guard isEditable else { return }
+        insertText("  ", replacementRange: selectedRange())
+    }
+
     var language: HighlightLanguage = .automatic { didSet { scheduleHighlight() } }
     var automaticHint: String? { didSet { scheduleHighlight() } }
     var onHighlight: ((String) -> Void)?
@@ -159,9 +166,55 @@ final class HighlightTextView: NSTextView {
     private(set) var lastAppliedRange: NSRange?
     private(set) var lastApplicationMilliseconds: Double = 0
     private var requestedRange: NSRange?
+    private(set) var errorOffset: Int?
+
+    func showError(at offset: Int?) {
+        guard offset != nil || errorOffset != nil else { return }
+        let source = string as NSString
+        layoutManager?.removeTemporaryAttribute(.backgroundColor, forCharacterRange: NSRange(location: 0, length: source.length))
+        errorOffset = offset.flatMap { (0...source.length).contains($0) ? $0 : nil }
+        if let offset = errorOffset {
+            let range = offset < source.length ? source.rangeOfComposedCharacterSequence(at: offset) : NSRange(location: offset, length: 0)
+            if range.length > 0 {
+                layoutManager?.addTemporaryAttribute(.backgroundColor, value: NSColor.systemRed.withAlphaComponent(0.30), forCharacterRange: range)
+            }
+            scrollRangeToVisible(range)
+        }
+        needsDisplay = true
+    }
+
+    override func drawBackground(in dirtyRect: NSRect) {
+        super.drawBackground(in: dirtyRect)
+        // EOF and newline errors need a visible block rather than a glyph background.
+        let source = string as NSString
+        guard let offset = errorOffset, offset <= source.length,
+              let layoutManager, let textContainer else { return }
+        let atEnd = offset == source.length
+        let atNewline = !atEnd && [10, 13].contains(source.character(at: offset))
+        guard atEnd || atNewline else { return }
+        layoutManager.ensureLayout(for: textContainer)
+        var rect = layoutManager.extraLineFragmentRect
+        if atNewline {
+            let glyph = layoutManager.glyphIndexForCharacter(at: offset)
+            rect = layoutManager.lineFragmentRect(forGlyphAt: glyph, effectiveRange: nil)
+            rect.origin.x += layoutManager.location(forGlyphAt: glyph).x
+        } else if rect.height == 0, layoutManager.numberOfGlyphs > 0 {
+            let last = layoutManager.numberOfGlyphs - 1
+            rect = layoutManager.lineFragmentRect(forGlyphAt: last, effectiveRange: nil)
+            rect.origin.x = layoutManager.boundingRect(forGlyphRange: NSRange(location: last, length: 1), in: textContainer).maxX
+        }
+        rect.origin.x += textContainerOrigin.x
+        rect.origin.y += textContainerOrigin.y
+        rect.size.width = 8
+        rect.size.height = max(rect.height, font.map { layoutManager.defaultLineHeight(for: $0) } ?? 17)
+        NSColor.systemRed.withAlphaComponent(0.40).setFill()
+        rect.fill(using: .sourceOver)
+    }
 
     override func didChangeText() {
+        showError(at: nil)
         super.didChangeText()
+        (enclosingScrollView?.verticalRulerView as? LineNumberRuler)?.updateLineStarts()
         scheduleHighlight()
     }
     override func viewDidChangeEffectiveAppearance() {
@@ -175,6 +228,7 @@ final class HighlightTextView: NSTextView {
 
     // Scroll/resize requests reuse the parser tree; they do not wait for the typing debounce.
     func scheduleViewportHighlight() {
+        enclosingScrollView?.verticalRulerView?.needsDisplay = true
         guard requestedRange != viewportRange() else { return }
         scheduleHighlight(delay: 30)
     }
@@ -240,5 +294,6 @@ final class HighlightTextView: NSTextView {
         lastAppliedRange = result.paintedRange
         lastApplicationMilliseconds = Date().timeIntervalSince(start) * 1000
         onHighlight?(result.status)
+        enclosingScrollView?.verticalRulerView?.needsDisplay = true
     }
 }
