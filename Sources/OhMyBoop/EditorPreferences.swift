@@ -14,6 +14,9 @@ final class EditorPreferences {
     @ObservationIgnored private let defaults: UserDefaults
     private var storedFontName: String
     private var storedFontSize: Double
+    var automaticallyFormatJSONOnPaste: Bool {
+        didSet { defaults.set(automaticallyFormatJSONOnPaste, forKey: "editor.automaticallyFormatJSONOnPaste") }
+    }
     var fontName: String {
         get { storedFontName }
         set {
@@ -39,6 +42,7 @@ final class EditorPreferences {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        automaticallyFormatJSONOnPaste = defaults.bool(forKey: "editor.automaticallyFormatJSONOnPaste")
         let saved = defaults.string(forKey: "editor.fontName") ?? Self.systemFontID
         storedFontName = Self.fontNames.contains(saved) ? saved : Self.systemFontID
         storedFontSize = Self.validSize(defaults.object(forKey: "editor.fontSize") as? Double ?? 14)

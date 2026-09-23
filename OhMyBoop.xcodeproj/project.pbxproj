@@ -23,6 +23,7 @@
 		B0EDD2721690FBD67856F49F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72ADCBFF41B69C5A8476F2EC /* Assets.xcassets */; };
 		C11E657671503764B61D8AAF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2AA257FE72039D432786568F /* Localizable.strings */; };
 		C33853BDC0484C9D63CD7913 /* queries in Resources */ = {isa = PBXBuildFile; fileRef = C6593C29CE1B27A3E9343C5E /* queries */; };
+		E0D9DE2D141CF7B88B9BAE10 /* JSONPasteFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF873F05D6CF7B466DB55BB /* JSONPasteFormatter.swift */; };
 		EB5EBDBBD6CD7C79BBF9C6AF /* OhMyBoopApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */; };
 		EE925B2A882745DA89A8D3B7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6E16A8EBC4C0EF1370DFC4 /* ContentView.swift */; };
 		F2A2B2395BC3F0E340CDE2E0 /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49FEB14D7689E2A4DEF6F7B2 /* ThirdPartyNotices.txt */; };
@@ -48,6 +49,7 @@
 		C6593C29CE1B27A3E9343C5E /* queries */ = {isa = PBXFileReference; lastKnownFileType = folder; name = queries; path = Sources/OhMyBoop/Resources/queries; sourceTree = SOURCE_ROOT; };
 		DEA6419BBA0DFA38ACF2D57B /* ScriptEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptEngine.swift; sourceTree = "<group>"; };
 		E32117CAD3AA3255A6E7CE94 /* LineNumberRuler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineNumberRuler.swift; sourceTree = "<group>"; };
+		EFF873F05D6CF7B466DB55BB /* JSONPasteFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPasteFormatter.swift; sourceTree = "<group>"; };
 		FFBAE7D707ADF7782A3BC5D5 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,6 +76,7 @@
 				6264027E78E6E4802BE51236 /* EditorSettingsView.swift */,
 				865C6714C5495268D9E22D26 /* FormatCatalog.swift */,
 				107758A798518553C2841613 /* Highlighting.swift */,
+				EFF873F05D6CF7B466DB55BB /* JSONPasteFormatter.swift */,
 				E32117CAD3AA3255A6E7CE94 /* LineNumberRuler.swift */,
 				FFBAE7D707ADF7782A3BC5D5 /* Localization.swift */,
 				3A4A03337F29A2A31AFD7D01 /* OhMyBoopApp.swift */,
@@ -220,6 +223,7 @@
 				9312023890E39115CA73C69D /* EditorSettingsView.swift in Sources */,
 				914D7852AAE57A6AE6D08243 /* FormatCatalog.swift in Sources */,
 				AF3B671D85DD223822DC1B3B /* Highlighting.swift in Sources */,
+				E0D9DE2D141CF7B88B9BAE10 /* JSONPasteFormatter.swift in Sources */,
 				A1984FA28360E365F3D3B6C7 /* LineNumberRuler.swift in Sources */,
 				3BB3DF2ED22DA20FACA015C4 /* Localization.swift in Sources */,
 				EB5EBDBBD6CD7C79BBF9C6AF /* OhMyBoopApp.swift in Sources */,

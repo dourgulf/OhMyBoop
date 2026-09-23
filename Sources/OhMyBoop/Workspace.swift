@@ -89,6 +89,11 @@ final class EditorSession: NSObject, NSTextViewDelegate {
         editor.string = text
         editor.setAccessibilityLabel(L10n.text("%@ 文本编辑器", id))
         editor.delegate = self
+        editor.transformPastedText = { [weak self] source in
+            guard let self, !self.isReadOnly, self.format?.id == "json",
+                  self.preferences.automaticallyFormatJSONOnPaste else { return nil }
+            return JSONPasteFormatter.format(source)
+        }
         let count = (text as NSString).length
         let start = min(max(0, initialDraft.selectionLocation), count)
         editor.setSelectedRange(NSRange(location: start, length: min(max(0, initialDraft.selectionLength), count - start)))

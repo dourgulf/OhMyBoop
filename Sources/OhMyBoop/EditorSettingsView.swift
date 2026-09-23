@@ -31,6 +31,11 @@ struct EditorSettingsView: View {
                 Text(L10n.text("应用于所有编辑器和结果预览，自动保存。"))
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section("JSON") {
+                Toggle(L10n.text("粘贴时自动格式化并去除反斜杠"), isOn: $preferences.automaticallyFormatJSONOnPaste)
+                Text(L10n.text("仅处理 JSON 编辑器的粘贴内容；去除外层转义后尝试格式化，解析失败时保留去除结果。"))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section(L10n.text("预览")) {
                 Text(verbatim: "{\n  \"text\": \"你好\",\n  \"count\": 42\n}")
                     .font(Font(preferences.font))

@@ -180,3 +180,7 @@
 "预览" = "Preview";
 "高亮" = "Highlighting";
 "高亮语言" = "Syntax language";
+
+"粘贴时自动格式化并去除反斜杠" = "Automatically format and remove slashes on paste";
+
+"仅处理 JSON 编辑器的粘贴内容；去除外层转义后尝试格式化，解析失败时保留去除结果。" = "Only processes JSON editor pastes. Removes outer escapes, then formats when valid; keeps the unescaped text if parsing fails.";

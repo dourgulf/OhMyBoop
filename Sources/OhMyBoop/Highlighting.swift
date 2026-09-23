@@ -151,6 +151,19 @@ actor HighlightEngine {
 
 @MainActor
 final class HighlightTextView: NSTextView {
+    var transformPastedText: ((String) -> String?)?
+
+    override func readSelection(from pboard: NSPasteboard, type: NSPasteboard.PasteboardType) -> Bool {
+        guard isEditable, let source = pboard.string(forType: type),
+              let transformed = transformPastedText?(source) else {
+            return super.readSelection(from: pboard, type: type)
+        }
+        breakUndoCoalescing()
+        insertText(transformed, replacementRange: selectedRange())
+        breakUndoCoalescing()
+        return true
+    }
+
     override func insertTab(_ sender: Any?) {
         guard isEditable else { return }
         insertText("  ", replacementRange: selectedRange())
